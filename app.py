@@ -1,7 +1,6 @@
 from flask import Flask, render_template, redirect, request, session
 from flask_session import Session
 from datetime import timedelta
-from utils import *
 import random
 import os
 import mysql.connector as mdb
