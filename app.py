@@ -118,13 +118,16 @@ def search():
     #Sanity checks
     if not origin or not destination or not date:
         return redirect(url_for('landing_page'))
-    # Implement search logic here
+    # Implementing search logic
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("use Netarosh$FLYTAU;")
     query = """
                 SELECT * 
                 FROM 
                     Flight as f
                 JOIN
-                    Flying Route as fr ON f.Route_id = fr.Route_id
+                    Flying_route as fr ON f.Route_id = fr.Route_id
                 WHERE 
                     fr.Origin_airport = %s AND 
                     fr.Destination_airport = %s AND 
@@ -132,8 +135,7 @@ def search():
                     f.Flight_status = 'ACTIVE'
                 ORDER BY Departure_time
             """
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    
     cursor.execute(query, (origin, destination, date))
     flights = cursor.fetchall()
     cursor.close()
