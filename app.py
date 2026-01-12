@@ -157,8 +157,8 @@ def flight_view(flight_number):
             """
     ### REMEMBER TO ADD MORE DETAILS LIKE FLIGHT DURATION, SEATS, CLASS, ETC ETC
     cursor.execute(query, (flight_number,))
-    flights = cursor.fetchall()
-    return render_template('flight_view.html', role=get_user_role(), flights=flights)
+    flights = cursor.fetchone()
+    return render_template('flight_view.html', role=get_user_role(), flight=flight)
 
 @application.route('/check_out', methods=['GET','POST'])
 def check_out():
