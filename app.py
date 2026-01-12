@@ -154,7 +154,7 @@ def flight_view():
                 JOIN
                     Flying_route as fr ON f.Route_id = fr.Route_id
                 WHERE 
-                    f.flight_number = %s
+                    f.Flight_number = %s
             """
     ### REMEMBER TO ADD MORE DETAILS LIKE FLIGHT DURATION, SEATS, CLASS, ETC ETC
     cursor.execute(query, (flight_number))
