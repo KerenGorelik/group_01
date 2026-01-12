@@ -9,7 +9,7 @@
     <strong>Departing from: </strong> {{flights.Origin_airport}}
     <p>Departing time: </p> {{flights.Departure_date}} {{flights.Departure_time}}
     <strong>Landing at: </strong> {{flights.Destination_airport}}
-    <p>Landing time: </p> {{flights.Duration_Of_Flight}} 
+    <p>Landing time: </p> {{flights.Duration}} 
     <strong>Price: </strong> {{flights.Price}}
     <p>Not what you were looking for? <a href="{{ url_for('landing_page') }}">Back to home page</a></p>
     {% if role == 'client' %}

@@ -147,7 +147,7 @@ def flight_view(flight_number):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     query = """
-                SELECT f.* , fr.Origin_airport, fr.Destination_airport, fr.Duration_Of_Flight
+                SELECT f.* , fr.Origin_airport, fr.Destination_airport, fr.Duration
                 FROM 
                     Flight as f
                 JOIN
