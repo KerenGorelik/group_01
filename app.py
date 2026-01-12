@@ -156,7 +156,7 @@ def flight_view(flight_number):
                     f.Flight_number = %s
             """
     ### REMEMBER TO ADD MORE DETAILS LIKE FLIGHT DURATION, SEATS, CLASS, ETC ETC
-    cursor.execute(query, (flight_number))
+    cursor.execute(query, (flight_number,))
     flights = cursor.fetchall()
     return render_template('flight_view.html', role=get_user_role(), flights=flights)
 
