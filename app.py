@@ -114,7 +114,7 @@ def search():
     origin = request.args.get('origin')
     destination = request.args.get('destination')
     date = request.args.get('date')
-
+    print(f"Searching flights: {origin} → {destination} on {date}")
     #Sanity checks
     if not origin or not destination or not date:
         return redirect(url_for('landing_page'))
