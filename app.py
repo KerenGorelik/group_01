@@ -142,9 +142,9 @@ def search():
 
     return render_template('landing_page.html', role=get_user_role(), flights=flights)
 
-@application.route('/flight_view/<int:flight_id>', methods=['GET','POST'])
+@application.route('/flight_view/<int:flight_number>', methods=['GET','POST'])
 def flight_view():
-    flight_id = request.args.get('flight_id')
+    flight_number = request.args.get('flight_number')
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     query = """
@@ -154,16 +154,16 @@ def flight_view():
                 JOIN
                     Flying_route as fr ON f.Route_id = fr.Route_id
                 WHERE 
-                    f.flight_id = %s
+                    f.flight_number = %s
             """
     ### REMEMBER TO ADD MORE DETAILS LIKE FLIGHT DURATION, SEATS, CLASS, ETC ETC
-    cursor.execute(query, (flight_id))
+    cursor.execute(query, (flight_number))
     flights = cursor.fetchall()
     return render_template('flight_view.html', role=get_user_role(), flights=flights)
 
 @application.route('/check_out', methods=['GET','POST'])
 def check_out():
-    flight_id = request.args.get('flight_id')
+    flight_number = request.args.get('flight_number')
     client_email = session['client_email']
 
     return render_template('check_out.html', role=get_user_role())
