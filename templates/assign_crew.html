@@ -5,7 +5,7 @@
 </head>
 <body>
 <h2>Assign Crew to Flight {{ flight_number }}</h2>
-
+<input type="hidden" name="flight_number" value="{{ flight_number }}">
 <form method="post">
   <h3>Pilots</h3>
   {% for p in pilots %}

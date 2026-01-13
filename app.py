@@ -299,6 +299,7 @@ def assign_crew():
 
     flight_number = request.args.get('flight_number')
     if request.method == 'POST':
+        flight_number = request.form.get('flight_number')
         pilots = request.form.getlist('pilots')
         stewards = request.form.getlist('stewards')
 
@@ -331,8 +332,8 @@ def assign_crew():
         return redirect(url_for('admin_dashboard'))
 
     # GET — show available staff
-    available_pilots = get_available_staff(flight_number, role='pilot')
-    available_stewards = get_available_staff(flight_number, role='steward')
+    available_pilots = get_available_pilots(flight_number, long_haul_required=False)
+    available_stewards = get_available_stewards(flight_number, long_haul_required=False)
 
     return render_template(
         'assign_crew.html',
