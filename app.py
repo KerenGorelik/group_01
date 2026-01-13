@@ -104,6 +104,40 @@ def login():
 
     return render_template('login.html')
 
+@application.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+        passport_number = request.form['passport_number']
+        birth_date = request.form['birth_date']
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Check if email exists
+        cursor.execute("SELECT * FROM Registered_client WHERE Email = %s", (email,))
+        if cursor.fetchone():
+            cursor.close()
+            conn.close()
+            return "Email already registered", 400
+
+        # Insert new client
+        cursor.execute(
+            "INSERT INTO Registered_client (Email, Passport_number, Birth_date, Registered_password, Registration_date) VALUES (%s, %s, %s, %s, CURDATE())",
+            (email, passport_number, birth_date, password)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        session['client_id'] = email  # log them in immediately
+        return redirect(url_for('landing_page'))
+
+    return render_template('register.html')
+
+
 @application.route('/logout')
 def logout():
     session.clear()
