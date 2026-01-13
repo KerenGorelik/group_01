@@ -5,6 +5,9 @@ import random
 import os
 import mysql.connector as mdb
 from flask import url_for
+from datetime import datetime, timedelta
+
+
 
 
 application = Flask(__name__)
@@ -54,6 +57,75 @@ def get_user_role():
     conn.close()
     return 'guest'
 
+def get_available_staff(flight_number, employee_table, assignment_table, extra_conditions=""):
+    """Return staff members not assigned to conflicting flights."""
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Get flight details
+    query = """
+        SELECT f.*, fr.*
+        FROM Flight f
+        JOIN Flying_route fr ON f.Route_id = fr.Route_id
+        WHERE f.Flight_number = %s
+    """
+    cursor.execute(query, (flight_number,))
+    flight = cursor.fetchone()
+    # defining departure and arrival datetimes
+    dep_dt = datetime.combine(
+            flight['Departure_date'],
+            flight['Departure_time']
+        )
+    arr_dt = dep_dt + timedelta(minutes=flight['Duration'])
+
+    lquery = f"""
+        SELECT e.Employee_id,
+               e.Hebrew_first_name,
+               e.Hebrew_last_name
+        FROM {employee_table} e
+        WHERE 1=1
+        {extra_conditions}
+        AND e.Employee_id NOT IN (
+            SELECT a.Employee_id
+            FROM {assignment_table} a
+            JOIN Flight f2 ON a.Flight_number = f2.Flight_number
+            JOIN Flying_route fr2 ON f2.Route_id = fr2.Route_id
+            WHERE
+                TIMESTAMP(f2.Departure_date, f2.Departure_time) < %s
+            AND TIMESTAMP(f2.Departure_date, f2.Departure_time)
+                + INTERVAL fr2.Duration MINUTE > %s
+        )
+    """
+
+    cursor.execute(query, (arr_dt, dep_dt))
+    result = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return result
+
+def get_available_pilots(flight_number, long_haul_required):
+    condition = ""
+    if long_haul_required:
+        condition = "AND e.Long_haul_qualified = TRUE"
+
+    return get_available_staff(
+        flight_number,
+        employee_table="Pilot",
+        assignment_table="Pilot_in_flight",
+        extra_conditions=condition
+    )
+def get_available_stewards(flight_number, long_haul_required):
+    condition = ""
+    if long_haul_required:
+        condition = "AND e.Long_haul_qualified = TRUE"
+    return get_available_staff(
+        flight_number,
+        employee_table="Steward",
+        assignment_table="Steward_in_flight", 
+        extra_conditions=condition
+    )
+
 @application.route("/")
 def landing_page():
     """Landing page route that redirects based on user role."""
@@ -69,7 +141,56 @@ def landing_page():
 def admin_dashboard():
     if get_user_role() != 'manager':
         return "Forbidden", 403
-    return "Welcome to the admin dashboard!"
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM Flight ORDER BY Departure_date, Departure_time ASC")
+    flights= cursor.fetchall()
+
+    cursor.execute("SELECT * FROM Pilot")
+    pilots= cursor.fetchall()
+
+    cursor.execute("SELECT * FROM Steward")
+    stewards= cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return render_template('admin_dashboard.html', flights=flights, pilots=pilots, stewards=stewards)
+
+@application.route('/admin/create_flight', methods=['POST'])
+def create_flight():
+    manager_id = session['manager_employee_id']
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Get form data
+    origin = request.form['origin']
+    destination = request.form['destination']
+    departure_date = request.form['departure_date']
+    departure_time = request.form['departure_time']
+    price = request.form['price']
+    # Get route ID 
+    cursor.execute(
+        "SELECT Route_id FROM Flying_route WHERE Origin_airport = %s AND Destination_airport = %s",
+        (origin, destination)
+    )
+    route = cursor.fetchone()
+    route_id = route['Route_id']
+    # Insert flight into database
+    cursor.execute(
+        "INSERT INTO Flight (Route_id, Origin_airport, Destination_airport, Departure_date, Departure_time, Status) VALUES (%s,%s, %s, %s, %s, 'ACTIVE')",
+        (route_id, origin, destination, departure_date, departure_time)
+    )
+    flight_number = cursor.lastrowid
+    # Insert flight pricing
+    cursor.execute(
+        "INSERT INTO Flight_pricing (Employee_id, Flight_number, Price) VALUES (%s, %s, %s)",
+        (manager_id, flight_number, price)
+    )
+    conn.commit()
+    
+    cursor.close()
+    conn.close()
 
 @application.route('/login', methods=['GET', 'POST'])
 def login():
