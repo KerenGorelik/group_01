@@ -234,7 +234,7 @@ def admin_create_flight():
     cursor.execute("SELECT DISTINCT Destination_airport FROM Flying_route")
     destinations = cursor.fetchall()
 
-    cursor.execute("SELECT DISTINCT Plane_id FROM Plane")
+    cursor.execute("SELECT Plane_id FROM Plane")
     planes = cursor.fetchall()
 
     if request.method == 'POST':
@@ -242,6 +242,7 @@ def admin_create_flight():
         destination = request.form['destination']
         departure_date = request.form['departure_date']
         departure_time = request.form['departure_time']
+        plane = request.form['plane']
         price = request.form['price']
         manager_id = session['manager_employee_id']
 
@@ -270,9 +271,9 @@ def admin_create_flight():
             flight_number = max_flight['max_num'] + 1
 
         cursor.execute("""
-            INSERT INTO Flight (Flight_number, Route_id, Departure_date, Departure_time, Flight_status)
-            VALUES (%s, %s, %s, %s, 'ACTIVE')
-        """, (flight_number, route_id, departure_date, departure_time))
+            INSERT INTO Flight (Flight_number, Plane_id, Route_id, Departure_date, Departure_time, Flight_status)
+            VALUES (%s, %s, %s, %s, %s, 'ACTIVE')
+        """, (flight_number, plane, route_id, departure_date, departure_time))
 
         # Set pricing
         cursor.execute("""
