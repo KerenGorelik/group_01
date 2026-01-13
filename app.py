@@ -259,12 +259,17 @@ def admin_create_flight():
         route_id = route['Route_id']
     
         # Create flight
-        cursor.execute("""
-            INSERT INTO Flight (Route_id, Departure_date, Departure_time, Flight_status)
-            VALUES (%s, %s, %s, 'ACTIVE')
-        """, (route_id, departure_date, departure_time))
+        cursor.execute("SELECT MAX(Flight_number) AS max_num FROM Flight")
+        max_flight = cursor.fetchone()
+        if max_flight['max_num'] is None:
+            flight_number = 1
+        else:
+            flight_number = max_flight['max_num'] + 1
 
-        flight_number = cursor.lastrowid
+        cursor.execute("""
+            INSERT INTO Flight (Flight_number, Route_id, Departure_date, Departure_time, Flight_status)
+            VALUES (%s, %s, %s, %s, 'ACTIVE')
+        """, (flight_number, route_id, departure_date, departure_time))
 
         # Set pricing
         cursor.execute("""
