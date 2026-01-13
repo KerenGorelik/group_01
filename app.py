@@ -306,28 +306,21 @@ def assign_crew():
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        try:
-            for pilot_id in pilots:
-                cursor.execute("""
-                    INSERT INTO Pilot_in_flight (Employee_id, Flight_number)
-                    VALUES (%s, %s)
-                """, (pilot_id, flight_number))
+        for pilot_id in pilots:
+            cursor.execute("""
+                INSERT INTO Pilot_in_flight (Employee_id, Flight_number)
+                VALUES (%s, %s)
+            """, (pilot_id, flight_number))
 
-            for steward_id in stewards:
-                cursor.execute("""
-                    INSERT INTO Steward_in_flight (Employee_id, Flight_number)
-                    VALUES (%s, %s)
-                """, (steward_id, flight_number))
+        for steward_id in stewards:
+            cursor.execute("""
+                INSERT INTO Steward_in_flight (Employee_id, Flight_number)
+                VALUES (%s, %s)
+            """, (steward_id, flight_number))
 
-            conn.commit()
-
-        except Exception:
-            conn.rollback()
-            raise
-
-        finally:
-            cursor.close()
-            conn.close()
+        conn.commit()
+        cursor.close()
+        conn.close()
 
         return redirect(url_for('admin_dashboard'))
 
