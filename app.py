@@ -192,6 +192,33 @@ def create_flight():
     cursor.close()
     conn.close()
 
+@application.route('/admin/add_staff', methods=['POST'])
+def add_staff():
+    if get_user_role() != 'manager':
+        return "Forbidden", 403
+    manager_id = session['manager_employee_id']
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Get form data
+    name = request.form['name']
+    email = request.form['email']
+    password = request.form['password']
+    employee_id = request.form['employee_id']
+    role = request.form['role']
+    first_name = name.split()[0]
+    last_name = ' '.join(name.split()[1:]) if len(name.split()) > 1 else ''
+
+    # Insert staff into database based on role
+    cursor.execute(
+        "INSERT INTO {role} (Employee_id, Added_by_manager_id, Hebrew_first_name, Hebrew_last_name, Employment_date) VALUES (%s, %s, %s, %s, %s)".format(role=role),
+        (employee_id, manager_id, first_name, last_name, datetime.now().date())
+    )
+    conn.commit()
+
+    cursor.close()
+    conn.close()    
+
 @application.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
