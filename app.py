@@ -335,7 +335,7 @@ def assign_crew():
         return "Forbidden", 403
 
     if request.method == 'POST':
-        long_haul_required = request.form.get('long_haul_required') == 'true'
+        long_haul_required = request.form.get('long_haul_required') == True
         flight_number = request.form.get('flight_number')
         pilots = request.form.getlist('pilots')
         stewards = request.form.getlist('stewards')
