@@ -82,7 +82,7 @@ def get_available_staff(flight_number, employee_table, assignment_table, extra_c
 
     arr_dt = dep_dt + timedelta(minutes=flight['Duration'])
 
-    lquery = f"""
+    query = f"""
         SELECT e.Employee_id,
                e.Hebrew_first_name,
                e.Hebrew_last_name
