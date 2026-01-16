@@ -129,6 +129,22 @@ def get_available_stewards(flight_number, long_haul_required):
         assignment_table="Stewards_in_flight", 
         extra_conditions=condition
     )
+def is_long_haul_flight(flight_number):
+    # Get plane size from DB
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT p.Size 
+        FROM Plane p
+        JOIN Flight f ON p.Plane_id = f.Plane_id
+        WHERE f.Flight_number = %s
+    """, (flight_number,))
+    plane = cursor.fetchone()
+    plane_size = plane['Size'] if plane else None
+    long_haul_required = plane_size == 'LARGE'
+    cursor.close()
+    conn.close()
+    return long_haul_required
 
 @application.route("/")
 def landing_page():
@@ -315,7 +331,7 @@ def admin_create_flight():
         cursor.close()
         conn.close()
 
-        return redirect(url_for('assign_crew', flight_number=flight_number, long_haul_required=(plane_size == 'LARGE')))
+        return redirect(url_for('assign_crew', flight_number=flight_number))
     cursor.close()
     conn.close()
 
@@ -335,10 +351,14 @@ def assign_crew():
         return "Forbidden", 403
 
     if request.method == 'POST':
-        long_haul_required = request.form.get('long_haul_required') == True
         flight_number = request.form.get('flight_number')
         pilots = request.form.getlist('pilots')
         stewards = request.form.getlist('stewards')
+
+        long_haul_required = is_long_haul_flight(flight_number)
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
         # checking long haul requirements are met
         if long_haul_required:
@@ -351,7 +371,6 @@ def assign_crew():
                     flight_number=flight_number,
                     pilots=get_available_pilots(flight_number, long_haul_required),
                     stewards=get_available_stewards(flight_number, long_haul_required),
-                    long_haul_required=long_haul_required,
                     error=error
                 )
         else:
@@ -364,7 +383,6 @@ def assign_crew():
                     flight_number=flight_number,
                     pilots=get_available_pilots(flight_number, long_haul_required),
                     stewards=get_available_stewards(flight_number, long_haul_required),
-                    long_haul_required=long_haul_required,
                     error=error
                 )
 
@@ -387,18 +405,6 @@ def assign_crew():
         return redirect(url_for('admin_dashboard'))
 
     # GET — show available staff
-
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    query = """ SELECT Size FROM Plane p
-                JOIN Flight f ON p.Plane_id = f.Plane_id
-                WHERE f.Flight_number = %s
-    """
-    cursor.execute(query, (request.args.get('flight_number'),))
-    plane = cursor.fetchone()
-    plane_size = plane['Size'] if plane else None
-    long_haul_required = plane_size == 'LARGE'
     flight_number = request.args.get('flight_number')
     available_pilots = get_available_pilots(flight_number, long_haul_required)
     available_stewards = get_available_stewards(flight_number, long_haul_required)
@@ -408,7 +414,6 @@ def assign_crew():
         flight_number=flight_number,
         pilots=available_pilots,
         stewards=available_stewards,
-        long_haul_required=long_haul_required
     )
 
 @application.route('/login', methods=['GET', 'POST'])
