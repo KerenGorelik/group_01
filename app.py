@@ -225,6 +225,8 @@ def add_staff():
 
 @application.route('/admin/create-flight', methods=['GET', 'POST'])
 def admin_create_flight():
+
+    error = None
     if get_user_role() != 'manager':
         return "Forbidden", 403
 
@@ -252,21 +254,45 @@ def admin_create_flight():
 
         # Find route
         cursor.execute("""
-            SELECT Route_id
+            SELECT Route_id, Duration
             FROM Flying_route
             WHERE Origin_airport = %s AND Destination_airport = %s
         """, (origin, destination))
 
         route = cursor.fetchone()
-
+        dur = route['Duration'] if route else None
+        # if no such route exists
         if not route:
             cursor.close()
             conn.close()
-            return "No such route exists", 400
+            error = "No such route exists."
+            return render_template(
+                'create_flight.html',
+                origins=origins,
+                destinations=destinations,
+                planes=planes,
+                error=error
+            )
 
         route_id = route['Route_id']
-    
-        # Create flight
+
+        # check plane id vs route compatibility
+        cursor.execute(""" SELECT Size FROM Plane WHERE Plane_id = %s """, (plane_id,))
+        plane = cursor.fetchone()
+        plane_size = plane['Size'] if plane else None
+        if plane_size == 'SMALL' and dur > 180:
+            cursor.close()
+            conn.close()
+            error = "Selected plane is not suitable for this long-haul route."
+            return render_template(
+                'create_flight.html',
+                origins=origins,
+                destinations=destinations,
+                planes=planes,
+                error=error
+            )
+
+        # Create flight- get flight number
         cursor.execute("SELECT MAX(Flight_number) AS max_num FROM Flight")
         max_flight = cursor.fetchone()
         if max_flight['max_num'] is None:
@@ -281,8 +307,8 @@ def admin_create_flight():
 
         # Set pricing
         cursor.execute("""
-            INSERT INTO Flight_pricing (Flight_number, Plane_id, Price, Employee_id)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO Flight_pricing (Flight_number, Plane_id, Price, Employee_id, Class_type)
+            VALUES (%s, %s, %s, %s, 'ECONOMY')
         """, (flight_number, plane_id, price, manager_id))
 
         conn.commit()
@@ -297,7 +323,8 @@ def admin_create_flight():
         'create_flight.html',
         origins=origins,
         destinations=destinations,
-        planes=planes
+        planes=planes,
+        error=error
     )
 
 @application.route('/admin/assign_crew', methods=['POST', 'GET'])
@@ -332,9 +359,21 @@ def assign_crew():
         return redirect(url_for('admin_dashboard'))
 
     # GET — show available staff
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """ SELECT Size FROM Plane p
+                JOIN Flight f ON p.Plane_id = f.Plane_id
+                WHERE f.Flight_number = %s
+    """
+    cursor.execute(query, (request.args.get('flight_number'),))
+    plane = cursor.fetchone()
+    plane_size = plane['Size'] if plane else None
+    long_haul_required = plane_size == 'LARGE'
     flight_number = request.args.get('flight_number')
-    available_pilots = get_available_pilots(flight_number, long_haul_required=False)
-    available_stewards = get_available_stewards(flight_number, long_haul_required=False)
+    available_pilots = get_available_pilots(flight_number, long_haul_required)
+    available_stewards = get_available_stewards(flight_number, long_haul_required)
 
     return render_template(
         'assign_crew.html',

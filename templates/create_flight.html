@@ -43,5 +43,10 @@
 
   <button type="submit">Create Flight</button>
 </form>
+{% if error %}
+  <div class="error-box">
+    {{ error }}
+  </div>
+{% endif %}
 </body>
 </html>
