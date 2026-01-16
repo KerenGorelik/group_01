@@ -72,10 +72,14 @@ def get_available_staff(flight_number, employee_table, assignment_table, extra_c
     cursor.execute(query, (flight_number,))
     flight = cursor.fetchone()
     # defining departure and arrival datetimes
+    dep_time_td = flight['Departure_time']   # timedelta
+    dep_time = (datetime.min + dep_time_td).time()
+
     dep_dt = datetime.combine(
-            flight['Departure_date'],
-            flight['Departure_time']
-        )
+        flight['Departure_date'],
+        dep_time
+    )
+
     arr_dt = dep_dt + timedelta(minutes=flight['Duration'])
 
     lquery = f"""
