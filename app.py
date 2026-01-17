@@ -278,13 +278,13 @@ def edit_flight(flight_number):
         conn.close()
         return "Flight not found", 404
 
-    cursor.execute("SELECT Employee_id, Name FROM Pilot")
+    cursor.execute("SELECT Employee_id, Hebrew_first_name, Hebrew_last_name FROM Pilot")
     pilots = cursor.fetchall()
 
     cursor.execute("SELECT Employee_id FROM Pilots_in_flight WHERE Flight_number = %s", (flight_number,))
     assigned_pilots = {row['Employee_id'] for row in cursor.fetchall()}
 
-    cursor.execute("SELECT Employee_id, Name FROM Steward")
+    cursor.execute("SELECT Employee_id, Hebrew_first_name, Hebrew_last_name FROM Steward")
     stewards = cursor.fetchall()
 
     cursor.execute("SELECT Employee_id FROM Stewards_in_flight WHERE Flight_number = %s", (flight_number,))
