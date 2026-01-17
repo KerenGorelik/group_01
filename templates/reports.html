@@ -37,7 +37,6 @@
 <table border="1">
   <tr>
     <th>Employee ID</th>
-    <th>Role</th>
     <th>Short-haul hours</th>
     <th>Long-haul hours</th>
   </tr>
@@ -45,12 +44,11 @@
   {% for r in staff_flight_hours %}
   <tr>
     <td>{{ r.Employee_id }}</td>
-    <td>{{ r.role }}</td>
     <td>{{ r.short_hours }}</td>
     <td>{{ r.long_hours }}</td>
   </tr>
   {% endfor %}
 </table>
-
+{{ staff_flight_hours }}
 </body>
 </html>
