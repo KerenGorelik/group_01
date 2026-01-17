@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FLYTAU ADMIN</title>
+</head>
+<body>
+<h1>Average Seat Usage</h1>
+
+<p>
+  Average taken seats per landed flight:
+  <strong>{{ avg_taken_seats | round(2) }}</strong>
+</p>
+
+<br>
+<h1>Revenue Breakdown</h1>
+
+<table border="1">
+  <tr>
+    <th>Manufacturer</th>
+    <th>Plane Size</th>
+    <th>Class</th>
+    <th>Total Revenue</th>
+  </tr>
+
+  {% for r in money_intake %}
+  <tr>
+    <td>{{ r.Manufacturer }}</td>
+    <td>{{ r.Size }}</td>
+    <td>{{ r.Class_type }}</td>
+    <td>{{ r.price }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<br>
+<h1>Crew Flight Hours</h1>
+
+<table border="1">
+  <tr>
+    <th>Employee ID</th>
+    <th>Role</th>
+    <th>Short-haul hours</th>
+    <th>Long-haul hours</th>
+  </tr>
+
+  {% for r in staff_flight_hours %}
+  <tr>
+    <td>{{ r.Employee_id }}</td>
+    <td>{{ r.role }}</td>
+    <td>{{ r.short_hours }}</td>
+    <td>{{ r.long_hours }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+</body>
+</html>
