@@ -405,7 +405,7 @@ def update_flight(flight_number):
             (flight_number, sid)
         )
 
-
+    cursor.commit()
     cursor.close()
     conn.close()
 
