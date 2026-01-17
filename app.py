@@ -364,15 +364,26 @@ def add_pilot():
         first = request.form['first_name']
         last = request.form['last_name']
         long_haul = 'long_haul' in request.form
-
+        city = request.form['city']
+        street = request.form['street']
+        house_number = request.form['house_number']
+        phone_number = request.form['phone_number']
+        zip_code = request.form['zip_code']
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        cursor.execute("""
-            INSERT INTO Pilot (Hebrew_first_name, Hebrew_last_name, Long_haul_qualified)
-            VALUES (%s, %s, %s)
-        """, (first, last, long_haul))
+        # create pilot id 
 
+        cursor.execute("SELECT MAX(Employee_id) AS max_num FROM Pilot")
+        max_pilot = cursor.fetchone()
+        if max_pilot['max_num'] is None:
+            pilot_id = 1
+        else:
+            pilot_id = max_pilot['max_num'] + 1
+        cursor.execute("""
+            INSERT INTO Pilot (Employee_id, Hebrew_first_name, Hebrew_last_name, Added_by_manager_id, City, Street, House_number, Phone_number, Zip_code, Employment_date, Long_haul_qualified)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (pilot_id, first, last, session.get('manager_employee_id'), city, street, house_number, phone_number, zip_code, datetime.now().date(), long_haul))
         conn.commit()
         cursor.close()
         conn.close()
@@ -388,14 +399,28 @@ def add_steward():
     if request.method == 'POST':
         first = request.form['first_name']
         last = request.form['last_name']
+        city = request.form['city']
+        street = request.form['street']
+        house_number = request.form['house_number']
+        phone_number = request.form['phone_number']
+        zip_code = request.form['zip_code']
+        long_haul = 'long_haul' in request.form
 
         conn = get_db_connection()
         cursor = conn.cursor()
 
+        # create steward id
+        cursor.execute("SELECT MAX(Employee_id) AS max_num FROM Steward")
+        max_steward = cursor.fetchone()
+        if max_steward['max_num'] is None:
+            steward_id = 1
+        else:
+            steward_id = max_steward['max_num'] + 1
+
         cursor.execute("""
-            INSERT INTO Steward (Hebrew_first_name, Hebrew_last_name)
-            VALUES (%s, %s)
-        """, (first, last))
+            INSERT INTO Steward (Employee_id, Hebrew_first_name, Hebrew_last_name, Added_by_manager_id, City, Street, House_number, Phone_number, Zip_code, Employment_date, Long_haul_qualified)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (steward_id, first, last, session.get('manager_employee_id'), city, street, house_number, phone_number, zip_code, datetime.now().date(), long_haul))
 
         conn.commit()
         cursor.close()
@@ -431,7 +456,7 @@ def edit_pilot(pilot_id):
         return redirect(url_for('employees'))
 
     cursor.execute("""
-        SELECT Employee_id, Hebrew_first_name, Hebrew_last_name, Long_haul_qualified
+        SELECT Employee_id, Hebrew_first_name, Hebrew_last_name, Long_haul_qualified, City, Street, House_number, Phone_number, Zip_code
         FROM Pilot WHERE Employee_id = %s
     """, (pilot_id,))
     pilot = cursor.fetchone()
@@ -465,7 +490,7 @@ def edit_steward(steward_id):
         return redirect(url_for('employees'))
 
     cursor.execute("""
-        SELECT Employee_id, Hebrew_first_name, Hebrew_last_name, Long_haul_qualified
+        SELECT Employee_id, Hebrew_first_name, Hebrew_last_name, Long_haul_qualified, City, Street, House_number, Phone_number, Zip_code
         FROM Steward WHERE Employee_id = %s
     """, (steward_id,))
     steward = cursor.fetchone()

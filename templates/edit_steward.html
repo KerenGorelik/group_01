@@ -11,7 +11,16 @@
   <input name="first_name" value="{{ steward.Hebrew_first_name }}" required><br>
   Last name:
   <input name="last_name" value="{{ steward.Hebrew_last_name }}" required><br>
-
+  City:
+  <input name="city" value="{{ steward.City }}" required><br>
+    Street:
+    <input name="street" value="{{ steward.Street }}" required><br>
+    House Number:
+    <input name="house_number" value="{{ steward.House_number }}" required><br>
+    Phone Number:
+    <input name="phone_number" value="{{ steward.Phone_number }}" required><br>
+    Zip Code:
+    <input name="zip_code" value="{{ steward.Zip_code }}" required><br>
   <label>
     <input type="checkbox" name="long_haul"
            {% if steward.Long_haul_qualified %}checked{% endif %}>
