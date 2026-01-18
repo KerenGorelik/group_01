@@ -1151,7 +1151,23 @@ def passenger_count(flight_number):
 @application.route('/checkout/<int:flight_number>/passengers/details', methods=['GET', 'POST'])
 def passenger_details(flight_number):
     count = int(request.args.get('count'))
-
+    if request.method == 'GET':
+        if get_user_role() == 'client':
+            # Pre-fill with registered client info
+            email = session.get('client_email')
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT English_first_name, English_last_name, Passport_number, Birth_date FROM Registered_client WHERE Email = %s", (email,))
+            user = cursor.fetchone()
+            user['type'] = 'ADULT' if (datetime.now().date() - user['Birth_date']).days // 365 < 18 else 'CHILD'
+            cursor.close()
+            conn.close()
+            return render_template(
+                'passenger_details.html',
+                flight_number=flight_number,
+                count=count,
+                client_info=user
+            )
     if request.method == 'POST':
         passengers = []
         for i in range(1, count + 1):
