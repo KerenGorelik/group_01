@@ -1057,6 +1057,16 @@ def logout():
 
 @application.route('/search', methods=['GET'])
 def search():
+    if get_user_role() == 'manager':
+        return "Forbidden", 403
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # load airport list
+    cursor.execute("SELECT Airport_code FROM Airport")
+    airports = cursor.fetchall()
+
     origin = request.args.get('origin')
     destination = request.args.get('destination')
     date = request.args.get('date')
@@ -1065,8 +1075,6 @@ def search():
     if not origin or not destination or not date:
         return redirect(url_for('landing_page'))
     # Implementing search logic
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
     query = """
                 SELECT * 
                 FROM 
@@ -1079,14 +1087,14 @@ def search():
                     f.Departure_date = %s AND
                     f.Flight_status = 'ACTIVE'
                 ORDER BY f.Departure_time
-            """
+            """ 
     
     cursor.execute(query, (origin, destination, date))
     flights = cursor.fetchall()
     cursor.close()
     conn.close()
 
-    return render_template('landing_page.html', role=get_user_role(), flights=flights)
+    return render_template('landing_page.html', role=get_user_role(), flights=flights, airports=airports)
 
 @application.route('/flight_view/<int:flight_number>', methods=['GET','POST'])
 def flight_view(flight_number):
