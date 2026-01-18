@@ -13,7 +13,7 @@
     <input name="name_{{ i }}" placeholder="Full Name" required>
     <input name="id_{{ i }}" placeholder="ID / Passport" value="{{ user.Passport_number }}" required>
     <select name="type_{{ i }}">
-      <option value="ADULT" {% if user. == 'ADULT' %}selected{% endif %}>Adult</option>
+      <option value="ADULT" {% if user.type == 'ADULT' %}selected{% endif %}>Adult</option>
       <option value="CHILD" {% if user.type == 'CHILD' %}selected{% endif %}>Child</option>
     </select>
   {% else %}
