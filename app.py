@@ -1160,6 +1160,8 @@ def passenger_count(flight_number):
 @application.route('/checkout/<int:flight_number>/passengers/details', methods=['GET', 'POST'])
 def passenger_details(flight_number):
     count = int(request.args.get('count'))
+    if count < 1 or count > 7:
+        return "Invalid passenger count", 400
     if request.method == 'GET':
         if get_user_role() == 'client':
             # Pre-fill with registered client info
@@ -1168,7 +1170,7 @@ def passenger_details(flight_number):
             cursor = conn.cursor(dictionary=True)
             cursor.execute("SELECT Passport_number, Birth_date FROM Registered_client WHERE Email = %s", (email,))
             user = cursor.fetchone()
-            user['type'] = 'ADULT' if (datetime.now().date() - user['Birth_date']).days // 365 < 18 else 'CHILD'
+            user['type'] = 'ADULT' if (datetime.now().date() - user['Birth_date']).days // 365 >= 18 else 'CHILD'
             cursor.close()
             conn.close()
             return render_template(
@@ -1188,6 +1190,10 @@ def passenger_details(flight_number):
             })
 
         session['passengers'] = passengers
+        
+        # Disallow proceeding if all passengers are children
+        if all(p['type'] == 'CHILD' for p in passengers):
+            return "At least one adult passenger is required.", 400
         return redirect(url_for('seat_selection', flight_number=flight_number))
 
     return render_template(
