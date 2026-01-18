@@ -1183,7 +1183,8 @@ def passenger_details(flight_number):
     return render_template(
         'passenger_details.html',
         flight_number=flight_number,
-        count=count
+        count=count,
+        role=get_user_role()
     )
 
 @application.errorhandler(404)
