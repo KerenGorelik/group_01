@@ -18,7 +18,10 @@
             <button type="submit">Book Now!</button>
         </form>
     {% else %}
-        <p>Book flight</p>
+            <form method="get" action="{{ url_for('passenger_count', flight_number=flight.Flight_number) }}">
+            <input type="hidden" name="Flight_number" value="{{ flight.Flight_number }}">
+            <button type="submit">Book Flight</button>
+        </form>
     {% endif %}
 </body>
 </html>

@@ -1140,12 +1140,35 @@ def flight_view(flight_number):
     flights = cursor.fetchone()
     return render_template('flight_view.html', role=get_user_role(), flight=flights)
 
-@application.route('/check_out', methods=['GET','POST'])
-def check_out():
-    flight_number = request.args.get('flight_number')
-    client_email = session['client_email']
+@application.route('/check_out/<int:flight_number>/passengers', methods=['GET', 'POST'])
+def passenger_count(flight_number):
+    if request.method == 'POST':
+        count = int(request.form['passenger_count'])
+        return redirect(url_for('passenger_details', flight_number=flight_number, count=count))
 
-    return render_template('check_out.html', role=get_user_role())
+    return render_template('passenger_count.html', flight_number=flight_number)
+
+@application.route('/checkout/<int:flight_number>/passengers/details', methods=['GET', 'POST'])
+def passenger_details(flight_number):
+    count = int(request.args.get('count'))
+
+    if request.method == 'POST':
+        passengers = []
+        for i in range(1, count + 1):
+            passengers.append({
+                "name": request.form[f"name_{i}"],
+                "id": request.form[f"id_{i}"],
+                "type": request.form[f"type_{i}"],
+            })
+
+        session['passengers'] = passengers
+        return redirect(url_for('seat_selection', flight_number=flight_number))
+
+    return render_template(
+        'passenger_details.html',
+        flight_number=flight_number,
+        count=count
+    )
 
 @application.errorhandler(404)
 def invalid_route(e):
