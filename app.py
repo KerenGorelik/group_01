@@ -320,6 +320,37 @@ def handle_crew_update(flight_number):
 
     return redirect(url_for('edit_flight', flight_number=flight_number))
 
+import string
+
+def generate_seats_for_plane(plane_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT Class_type, first_row, last_row, first_col, last_col
+        FROM Class
+        WHERE Plane_id = %s
+    """, (plane_id,))
+    classes = cursor.fetchall()
+
+    for c in classes:
+        rows = range(c['first_row'], c['last_row'] + 1)
+
+        cols = string.ascii_uppercase[
+            string.ascii_uppercase.index(c['first_col']):
+            string.ascii_uppercase.index(c['last_col']) + 1
+        ]
+
+        for row in rows:
+            for col in cols:
+                cursor.execute("""
+                    INSERT INTO Seat (Plane_id, Row_num, Col_num, Class_type)
+                    VALUES (%s, %s, %s, %s)
+                """, (plane_id, row, col, c['Class_type']))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 @application.route('/admin')
 def admin_dashboard():
@@ -450,6 +481,86 @@ GROUP BY Steward.Employee_id;
         money_intake=money_intake,
         staff_flight_hours=staff_flight_hours
     )
+
+# Admin add planes
+
+@application.route('/admin/add_plane', methods=['GET', 'POST'])
+def add_plane():
+    if get_user_role() != 'manager':
+        return "Forbidden", 403
+    if request.method == 'POST':
+        manufacturer = request.form['manufacturer']
+        size = request.form['size']
+        num_seats = int(request.form['num_seats'])
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # create plane id 
+        class_num = 2 if size == 'LARGE' else 1
+        cursor.execute("SELECT MAX(Plane_id) AS max_num FROM Plane")
+        max_plane = cursor.fetchone()
+        if max_plane['max_num'] is None:
+            plane_id = 1
+        else:
+            plane_id = max_plane['max_num'] + 1
+        cursor.execute("""
+            INSERT INTO Plane (Plane_id, Manufacturer, Size, Purchase_date, Number_of_classes, Number_of_seats)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (plane_id, manufacturer, size, datetime.now().date(), class_num, num_seats))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return redirect(url_for('add_classes', plane_id=plane_id))
+
+    return render_template('add_plane.html')
+
+@application.route('/admin/add_plane/<int:plane_id>/classes', methods=['GET', 'POST'])
+def add_classes(plane_id):
+    if get_user_role() != 'manager':
+        return "Forbidden", 403
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT Size FROM Plane WHERE Plane_id = %s", (plane_id,))
+    plane = cursor.fetchone()
+    size = plane['Size']
+    if request.method == 'POST':
+        
+        if size == 'LARGE':
+            bus_first_row = int(request.form['bus_first_row'])
+            bus_last_row = int(request.form['bus_last_row'])
+            bus_first_col = (request.form['bus_first_col'])
+            bus_last_col = (request.form['bus_last_col'])
+
+        eco_first_row = int(request.form.get('eco_first_row'))
+        eco_last_row = int(request.form.get('eco_last_row'))
+        eco_first_col = request.form.get('eco_first_col')
+        eco_last_col = request.form.get('eco_last_col')
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            INSERT INTO Class (Plane_id, Class_type, first_row, last_row, first_col, last_col)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (plane_id, 'ECONOMY', eco_first_row, eco_last_row, eco_first_col, eco_last_col))
+
+        if size == 'LARGE':
+            cursor.execute("""
+                INSERT INTO Class (Plane_id, Class_type, first_row, last_row, first_col, last_col)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (plane_id, 'BUSINESS', bus_first_row, bus_last_row, bus_first_col, bus_last_col))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        # generate plane seats 
+        generate_seats_for_plane(plane_id)
+
+        return redirect(url_for('admin_dashboard'))
+
+    return render_template('add_plane_classes.html', size=size)
+
 # Admin employee management 
 
 @application.route('/admin/employees')

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FLYTAU ADMIN- Add Classes</title>
+</head>
+<body>
+    <h1>Add Class seating</h1>
+<form method="post">
+    {% if size == 'LARGE' %}
+    <h2>Business Class</h2>
+    <input name="bus_first_row" placeholder="First row" required>
+    <input name="bus_last_row" placeholder="Last row" required>
+    <input name="bus_first_col" placeholder="First column" required>
+    <input name="bus_last_col" placeholder="Last column" required>
+  {% endif %}
+  <h2>Economy Class</h2>
+  <input name="eco_first_row" placeholder="First row" required>
+  <input name="eco_last_row" placeholder="Last row" required>
+  <input name="eco_first_col" placeholder="First column" required>
+  <input name="eco_last_col" placeholder="Last column" required>
+
+  <button type="submit">Save Classes</button>
+
+</form>
+{% if error %}
+  <div class="error-box">
+    {{ error }}
+  </div>
+{% endif %}
+</body>
+</html>

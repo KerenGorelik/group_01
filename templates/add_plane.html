@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FLYTAU ADMIN- Add Plane</title>
+</head>
+<body>
+    <h1>Add Plane</h1>
+    <form method="post">
+
+        <label>Manufacturer</label>
+        <select name="manufacturer" required>
+            <option value="">Select Manufacturer</option>
+            <option value="BOEING">BOEING</option>
+            <option value="AIRBUS">AIRBUS</option>
+            <option value="DASSAULT">DASSAULT</option>
+        </select>
+
+        <label>Size</label>
+        <select name="size" required>
+            <option value="">Select size</option>
+            <option value="SMALL">SMALL</option>
+            <option value="LARGE">LARGE</option>
+        </select>
+
+        <label>Number of seats</label>
+        <input type="number" name="num_seats" min="1",max="350" required>
+        <button type="submit">Continue to classes and seats</button>
+    </form>
+</form>
+</body>
+</html>
