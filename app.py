@@ -1194,11 +1194,42 @@ def passenger_details(flight_number):
         # Disallow proceeding if all passengers are children
         if all(p['type'] == 'CHILD' for p in passengers):
             return "At least one adult passenger is required.", 400
-        return redirect(url_for('seat_selection', flight_number=flight_number))
+        return redirect(url_for('seat_selection', flight_number=flight_number, count=count))
 
     return render_template(
         'passenger_details.html',
         flight_number=flight_number,
+        count=count,
+        role=get_user_role()
+    )
+
+@application.route('/checkout/<int:flight_number>/passengers/seat_selection', methods=['GET', 'POST'])
+def seat_selection(flight_number,count):
+    if request.method == 'POST':
+        selected_seats = []
+        for i in range(1, count + 1):
+            selected_seats.append(request.form[f"seat_{i}"])
+        session['selected_seats'] = selected_seats
+        return redirect(url_for('payment', flight_number=flight_number))
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Get available seats
+    cursor.execute("""
+        SELECT Row_num, Col_num, Availability
+        FROM Seats_in_flight
+        WHERE Flight_number = %s
+        ORDER BY Row_num, Col_num
+    """, (flight_number,))
+    seats = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        'seat_selection.html',
+        flight_number=flight_number,
+        seats=seats,
         count=count,
         role=get_user_role()
     )
