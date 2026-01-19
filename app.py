@@ -226,7 +226,7 @@ def handle_flight_update(flight_number):
             Flight_status = %s
         WHERE Flight_number = %s
     """, (route_id, date, time, status, flight_number))
-    
+
     # Update pricing
     cursor.execute("""
         UPDATE Flight_pricing
@@ -714,6 +714,7 @@ def create_flight():
     departure_date = request.form['departure_date']
     departure_time = request.form['departure_time']
     price = request.form['price']
+    plane_id = request.form['plane_id']
     # Get route ID 
     cursor.execute(
         "SELECT Route_id FROM Flying_route WHERE Origin_airport = %s AND Destination_airport = %s",
@@ -723,15 +724,36 @@ def create_flight():
     route_id = route['Route_id']
     # Insert flight into database
     cursor.execute(
-        "INSERT INTO Flight (Route_id, Origin_airport, Destination_airport, Departure_date, Departure_time, Status) VALUES (%s,%s, %s, %s, %s, 'ACTIVE')",
-        (route_id, origin, destination, departure_date, departure_time)
+        "INSERT INTO Flight (Route_id, Origin_airport, Destination_airport, Departure_date, Departure_time, Status, Plane_id) VALUES (%s,%s, %s, %s, %s, 'ACTIVE', %s)",
+        (route_id, origin, destination, departure_date, departure_time, plane_id)
     )
     flight_number = cursor.lastrowid
     # Insert flight pricing
     cursor.execute(
-        "INSERT INTO Flight_pricing (Employee_id, Flight_number, Price) VALUES (%s, %s, %s)",
+        "INSERT INTO Flight_pricing (Employee_id, Flight_number, Price, Class_type) VALUES (%s, %s, %s, 'ECONOMY')",
         (manager_id, flight_number, price)
     )
+
+    # Build Seating for the flight
+
+    is_big_plane = is_long_haul_flight(flight_number) # Determine plane size
+    cursor.execute("SELECT first_row, last_row, first_col, last_col FROM Class WHERE Plane_id = %s AND Class_type = %s", (plane_id, 'ECONOMY'))
+    economy_class = cursor.fetchone()
+    for row in range(economy_class['first_row'], economy_class['last_row'] + 1):
+        for col in range(economy_class['first_col'], economy_class['last_col'] + 1):
+            cursor.execute(
+                "INSERT INTO Seats_in_flight (Flight_number, Plane_id, Row_num, Col_num, Availability) VALUES (%s, %s, %s, %s, 1)",
+                (flight_number, plane_id, row, col)
+            )
+    if is_big_plane:
+        cursor.execute("SELECT first_row, last_row, first_col, last_col FROM Class WHERE Plane_id = %s AND Class_type = %s", (plane_id, 'BUSINESS'))
+        business_class = cursor.fetchone()
+        for row in range(business_class['first_row'], business_class['last_row'] + 1):
+            for col in range(business_class['first_col'], business_class['last_col'] + 1):
+                cursor.execute(
+                    "INSERT INTO Seats_in_flight (Flight_number, Plane_id, Row_num, Col_num, Availability) VALUES (%s, %s, %s, %s, 1)",
+                    (flight_number, plane_id, row, col)
+                )
     conn.commit()
     
     cursor.close()
