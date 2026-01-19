@@ -41,6 +41,12 @@
             </option>
         {% endfor %}
     </select>
+    <label>Economy Price</label>
+    <input type="number" required name="economy_price" value="{{ flight.economy_price }}">
+    {% if flight.Size == 'LARGE' %}
+        <label>Business Price</label>
+        <input type="number" required name="business_price" value="{{ flight.business_price }}">
+    {% endif %}
     <label>Status</label>
     <select name="status" required>
         {% for s in ['ACTIVE', 'CANCELLED', 'DELAYED'] %}

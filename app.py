@@ -163,6 +163,10 @@ def build_edit_flight_context(flight_number, error=None):
         cursor.close()
         conn.close()
         return None
+    
+    flight['economy_price'] = None
+    flight['business_price'] = None
+
     cursor.execute("SELECT Route_id, Origin_airport, Destination_airport FROM Flying_route")
     route = cursor.fetchall()
 
@@ -181,6 +185,13 @@ def build_edit_flight_context(flight_number, error=None):
     cursor.execute("SELECT Employee_id FROM Stewards_in_flight WHERE Flight_number = %s", (flight_number,))
     assigned_stewards = {row['Employee_id'] for row in cursor.fetchall()}
 
+    cursor.execute("SELECT Price, Class_type FROM Flight_pricing WHERE Flight_number = %s", (flight_number,))
+    prices = cursor.fetchall()
+    for p in prices:
+        if p['Class_type'] == 'ECONOMY':
+            flight['economy_price'] = p['Price']
+        elif p['Class_type'] == 'BUSINESS':
+            flight['business_price'] = p['Price']    
     cursor.close()
     conn.close()
 
@@ -200,7 +211,9 @@ def handle_flight_update(flight_number):
     route_id = request.form['route']
     date = request.form['departure_date']
     time = request.form['departure_time']
-    status = request.form['status']
+    status = request.form['status'] 
+    economy_price = request.form['economy_price']
+    business_price = request.form['business_price'] if 'business_price' in request.form else None
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -213,6 +226,20 @@ def handle_flight_update(flight_number):
             Flight_status = %s
         WHERE Flight_number = %s
     """, (route_id, date, time, status, flight_number))
+    
+    # Update pricing
+    cursor.execute("""
+        UPDATE Flight_pricing
+        SET Price = %s
+        WHERE Flight_number = %s AND Class_type = 'ECONOMY'
+    """, (economy_price, flight_number))
+
+    if business_price is not None:
+        cursor.execute("""
+            UPDATE Flight_pricing
+            SET Price = %s
+            WHERE Flight_number = %s AND Class_type = 'BUSINESS'
+        """, (business_price, flight_number))
 
     conn.commit()
     cursor.close()
