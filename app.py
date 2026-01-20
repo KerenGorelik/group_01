@@ -376,7 +376,7 @@ def admin_dashboard():
 
 @application.route('/admin/generate_all_seats')
 def admin_generate_all_seats():
-    if get_user_role() != 'admin':
+    if get_user_role() != 'manager':
         return "Forbidden", 403
 
     conn = get_db_connection()
