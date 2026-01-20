@@ -372,6 +372,113 @@ def admin_dashboard():
     conn.close()
     return render_template('admin_dashboard.html', flights=flights, pilots=pilots, stewards=stewards)
 
+# seat generation to insert seats into planes- intended to be used only once to fill in missing data, but wont break if used again. 
+
+@application.route('/admin/generate_all_seats')
+def admin_generate_all_seats():
+    if get_user_role() != 'admin':
+        return "Forbidden", 403
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    seats_created = 0
+    seats_in_flight_created = 0
+
+    # 1. Get all planes
+    cursor.execute("SELECT Plane_id FROM Plane")
+    planes = cursor.fetchall()
+
+    for plane in planes:
+        plane_id = plane['Plane_id']
+
+        # 2. Get classes for plane
+        cursor.execute("""
+            SELECT first_row, last_row, first_col, last_col
+            FROM Class
+            WHERE Plane_id = %s
+        """, (plane_id,))
+        classes = cursor.fetchall()
+
+        # 3. Generate Seat table
+        for cls in classes:
+            for row in range(cls['first_row'], cls['last_row'] + 1):
+                for col_ord in range(
+                    ord(cls['first_col']),
+                    ord(cls['last_col']) + 1
+                ):
+                    col = chr(col_ord)
+
+                    cursor.execute("""
+                        SELECT 1 FROM Seat
+                        WHERE Plane_id = %s AND Row_num = %s AND Col_num = %s
+                    """, (plane_id, row, col))
+
+                    if not cursor.fetchone():
+                        cursor.execute("""
+                            INSERT INTO Seat (Plane_id, Row_num, Col_num)
+                            VALUES (%s, %s, %s)
+                        """, (plane_id, row, col))
+                        seats_created += 1
+
+        # 4. Get all flights of this plane
+        cursor.execute("""
+            SELECT Flight_number
+            FROM Flight
+            WHERE Plane_id = %s
+        """, (plane_id,))
+        flights = cursor.fetchall()
+
+        # 5. Generate Seats_in_flight
+        for flight in flights:
+            flight_number = flight['Flight_number']
+
+            cursor.execute("""
+                SELECT Row_num, Col_num
+                FROM Seat
+                WHERE Plane_id = %s
+            """, (plane_id,))
+            seats = cursor.fetchall()
+
+            for seat in seats:
+                cursor.execute("""
+                    SELECT 1 FROM Seats_in_flight
+                    WHERE Flight_number = %s
+                      AND Plane_id = %s
+                      AND Row_num = %s
+                      AND Col_num = %s
+                """, (
+                    flight_number,
+                    plane_id,
+                    seat['Row_num'],
+                    seat['Col_num']
+                ))
+
+                if cursor.fetchone():
+                    continue
+
+                cursor.execute("""
+                    INSERT INTO Seats_in_flight
+                    (Flight_number, Plane_id, Row_num, Col_num, Availability)
+                    VALUES (%s, %s, %s, %s, 1)
+                """, (
+                    flight_number,
+                    plane_id,
+                    seat['Row_num'],
+                    seat['Col_num']
+                ))
+
+                seats_in_flight_created += 1
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return (
+        f"Done. Seats created: {seats_created}, "
+        f"Seats in flights created: {seats_in_flight_created}"
+    )
+
 # admin reports
 
 @application.route('/admin/reports')
