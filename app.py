@@ -1594,6 +1594,13 @@ def confirm_booking(flight_number):
               AND Row_num = %s
               AND Col_num = %s
         """, (flight_number, s['row'], s['col']))
+        # Insert into Seats_in_order
+        cursor.execute("""
+            INSERT INTO Seats_in_order (Booking_number, Plane_id, Row_num, Col_num)
+            VALUES (%s,
+                (SELECT Plane_id FROM Flight WHERE Flight_number = %s),
+                %s, %s)
+        """, (Booking_number, flight_number, s['row'], s['col']))
 
     conn.commit()
     cursor.close()
