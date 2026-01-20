@@ -1639,6 +1639,118 @@ def booking_success(Booking_number):
         role=get_user_role()
     )
 
+# Manage bookings
+
+@application.route('/manage-booking', methods=['GET', 'POST'])
+def manage_booking():
+    if request.method == 'GET':
+        return render_template('manage_booking.html', role=get_user_role())
+
+    # POST
+    if get_user_role() == 'client':
+        email = session.get('client_email')
+        return redirect(url_for('manage_booking_result', method='registered', email=email))
+
+    # guest
+    booking_number = request.form['booking_number']
+    passport_number = request.form['passport_number']
+    return redirect(url_for('manage_booking_result',
+                            method='guest',
+                            booking_number=booking_number,
+                            passport_number=passport_number))
+
+@application.route('/manage-booking/result')
+def manage_booking_result():
+    method = request.args.get('method')
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if method == 'registered':
+        email = request.args.get('email')
+        cursor.execute("""
+            SELECT *
+            FROM Booking
+            WHERE Email = %s
+            ORDER BY Booking_date DESC
+        """, (email,))
+        bookings = cursor.fetchall()
+
+    else:
+        booking_number = request.args.get('booking_number')
+        passport_number = request.args.get('passport_number')
+
+        cursor.execute("""
+            SELECT *
+            FROM Booking
+            WHERE Booking_number = %s
+              AND Passport_number = %s
+        """, (booking_number, passport_number))
+        bookings = cursor.fetchall()
+        if bookings is None:
+            return "No bookings found", 404
+        if bookings['Booking_status'] != 'ACTIVE':
+            return "Booking is not active", 400
+        
+
+    # load seats for each booking
+    for b in bookings:
+        cursor.execute("""
+            SELECT Row_num, Col_num
+            FROM Seats_in_order
+            WHERE Booking_number = %s
+        """, (b['Booking_number'],))
+        b['seats'] = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('manage_booking_result.html',
+                           bookings=bookings,
+                           role=get_user_role())
+
+@application.route('/manage-booking/cancel/<int:booking_number>', methods=['POST'])
+def cancel_booking(booking_number):
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # 1) update booking status
+    cursor.execute("""
+        UPDATE Booking
+        SET Booking_status = 'CUSTOMER_CANCELLED'
+        WHERE Booking_number = %s
+    """, (booking_number,))
+
+    # 2) free seats
+    cursor.execute("""
+        SELECT Flight_number, Row_num, Col_num
+        FROM Seats_in_order
+        WHERE Booking_number = %s
+    """, (booking_number,))
+    seats = cursor.fetchall()
+
+    for s in seats:
+        cursor.execute("""
+            UPDATE Seats_in_flight
+            SET Availability = 1
+            WHERE Flight_number = %s
+              AND Row_num = %s
+              AND Col_num = %s
+        """, (s['Flight_number'], s['Row_num'], s['Col_num']))
+        # also update seats in order
+        cursor.execute("""
+            DELETE FROM Seats_in_order
+            WHERE Booking_number = %s
+              AND Row_num = %s
+              AND Col_num = %s
+        """, (booking_number, s['Row_num'], s['Col_num']))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for('manage_booking'))
 
 @application.errorhandler(404)
 def invalid_route(e):
