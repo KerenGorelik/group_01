@@ -1724,7 +1724,7 @@ def cancel_booking(booking_number):
 
     # 2) free seats
     cursor.execute("""
-        SELECT Flight_number, Row_num, Col_num
+        SELECT Booking_number, Row_num, Col_num
         FROM Seats_in_order
         WHERE Booking_number = %s
     """, (booking_number,))
