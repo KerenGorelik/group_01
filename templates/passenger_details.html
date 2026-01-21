@@ -17,6 +17,7 @@
       <option value="CHILD" {% if user.type == 'CHILD' %}selected{% endif %}>Child</option>
     </select>
     <input name="email" placeholder="Email" value="{{ user.Email }}" required>
+    <input name="birthdate" type="date" required>
   {% else %}
     <h3>Passenger {{ i }}</h3>
     <input name="name_{{ i }}" placeholder="Full Name" required>
@@ -26,6 +27,7 @@
       <option value="CHILD">Child</option>
       {% if i == 1 %}
         <input name="email" placeholder="Email" required>
+        <input name="birthdate" type="date" required>
       {% endif %}
     </select>
   {% endif %}

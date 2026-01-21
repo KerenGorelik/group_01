@@ -1500,7 +1500,8 @@ def passenger_details(flight_number):
                 "name": request.form[f"name_{i}"],
                 "id": request.form[f"id_{i}"],
                 "type": request.form[f"type_{i}"],
-                "Email": request.form.get(f"email", None)
+                "Email": request.form.get(f"email", None),
+                "birthdate": request.form.get(f"birthdate", None)
             })
 
         session['passengers'] = passengers
@@ -1676,9 +1677,9 @@ def confirm_booking(flight_number):
     booking_number = max_booking + 1 if max_booking else 1
     # Insert booking
     cursor.execute("""
-        INSERT INTO Booking (Flight_number, Email, Booking_number, Booking_date, Booking_status, Number_of_tickets, Passport_number)
-        VALUES (%s, %s, %s, CURDATE(), 'ACTIVE', %s, %s)
-    """, (flight_number, email, booking_number, len(passengers), passengers[0]['id']))
+        INSERT INTO Booking (Flight_number, Email, Booking_number, Booking_date, Booking_status, Number_of_tickets, Passport_number, Birth_date)
+        VALUES (%s, %s, %s, CURDATE(), 'ACTIVE', %s, %s, %s)
+    """, (flight_number, email, booking_number, len(passengers), passengers[0]['id'], passengers[0]['birthdate']))
     Booking_number = booking_number
     # Assign seats + mark unavailable
     for s in seats:
