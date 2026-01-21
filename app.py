@@ -1727,6 +1727,12 @@ def cancel_booking(booking_number):
         WHERE Booking_number = %s
     """, (booking_number,))
 
+
+#כאן את לא שולפת את Flight_number בכלל מתוך Seats_in_order
+#וגם בתוך הלולאה את מנסה להשתמש ב־s['Flight_number'] למרות שלא הבאת אותו.
+#בנוסף, גם אם היית מתקנת את זה ל־Flight_number (מההזמנה), עדיין חסר Plane_id אם המפתח
+#ב־Seats_in_flight הוא (Flight_number, Plane_id, Row_num, Col_num) כמו אצלך במקומות אחרים.
+	
     # 2) free seats
     cursor.execute("""
         SELECT Booking_number, Row_num, Col_num
