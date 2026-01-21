@@ -1071,29 +1071,31 @@ def admin_create_flight():
         query = """
             SELECT p.Plane_id, p.Manufacturer, p.Size
             FROM Plane p
-            WHERE p.Plane_id NOT IN (
-                SELECT f2.Plane_id
+            WHERE NOT EXISTS (
+                SELECT 1
                 FROM Flight f2
                 JOIN Flying_route fr2 ON f2.Route_id = fr2.Route_id
-                WHERE
-                    TIMESTAMP(f2.Departure_date, f2.Departure_time) < %s
+                WHERE f2.Plane_id = p.Plane_id
+                AND f2.Departure_date = %s
+                AND TIMESTAMP(f2.Departure_date, f2.Departure_time) < %s
                 AND TIMESTAMP(f2.Departure_date, f2.Departure_time)
-                    + INTERVAL fr2.Duration MINUTE > %s
+                        + INTERVAL fr2.Duration MINUTE > %s
             )
         """
-        cursor.execute(query, (arr_dt, dep_dt))
+        cursor.execute(query, (departure_date,arr_dt, dep_dt))
         results = cursor.fetchall()
 
-        if not plane_id in [r['Plane_id'] for r in results]:
+        available_plane_ids = {r['Plane_id'] for r in results}
+
+        if plane_id not in available_plane_ids:
             cursor.close()
             conn.close()
-            error = "No available planes for this flight."
             return render_template(
                 'create_flight.html',
                 origins=origins,
                 destinations=destinations,
                 planes=planes,
-                error=error
+                error="No available planes for this flight."
             )
 
         # Create flight- get flight number
