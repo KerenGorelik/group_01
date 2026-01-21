@@ -152,6 +152,7 @@ def build_edit_flight_context(flight_number, error=None):
 
     cursor.execute("""
         SELECT f.Flight_number, p.Size, f.Route_id, f.Departure_date, f.Departure_time, f.Flight_status, p.plane_id, fr.Origin_airport, fr.Destination_airport
+		# p.plane_id במקום p.Plane_id בשורה 154
         FROM Flight f
         JOIN Plane p ON f.Plane_id = p.Plane_id
         JOIN Flying_route fr ON f.Route_id = fr.Route_id
