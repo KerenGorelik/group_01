@@ -122,7 +122,7 @@ LEFT JOIN
                 DATE_FORMAT(f.Departure_date, '%Y-%m') AS flight_month,
                 DATE(f.Departure_date) AS utilized_day
             FROM Flight AS f
-            JOIN Flying_Route AS r
+            JOIN Flying_route AS r
                 ON f.Route_id = r.Route_id
             WHERE f.Flight_status = 'LANDED'
 
@@ -159,7 +159,7 @@ LEFT JOIN
             ad.City AS Destination_city,
             COUNT(*) AS route_count
         FROM Flight AS f
-        JOIN Flying_Route AS r
+        JOIN Flying_route AS r
             ON f.Route_id = r.Route_id
         JOIN Airport AS ao
             ON r.Origin_airport = ao.Airport_Code
