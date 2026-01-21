@@ -1354,6 +1354,7 @@ def flight_view(flight_number):
     ### REMEMBER TO ADD MORE DETAILS LIKE FLIGHT DURATION, SEATS, CLASS, ETC ETC
     cursor.execute(query, (flight_number,))
     flights = cursor.fetchone()
+	#הבעיה: חסר cursor.close() ו־conn.close() לפני ה־return → דליפת חיבורים.
     return render_template('flight_view.html', role=get_user_role(), flight=flights)
 
 @application.route('/check_out/<int:flight_number>/passengers', methods=['GET', 'POST'])
