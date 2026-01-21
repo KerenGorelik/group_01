@@ -1048,16 +1048,7 @@ def admin_create_flight():
     
 
         # check plane availability
-            # Get flight details
-        query = """
-            SELECT f.*, fr.*
-            FROM Flight f
-            JOIN Flying_route fr ON f.Route_id = fr.Route_id
-            WHERE f.Flight_number = %s
-        """
-        cursor.execute(query, (flight_number,))
-        flight = cursor.fetchone()
-        # defining departure and arrival datetimes
+
         dep_time_td = departure_time
         dep_time = (datetime.min + dep_time_td).time()
 
