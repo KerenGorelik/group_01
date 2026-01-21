@@ -1369,6 +1369,7 @@ def passenger_count(flight_number):
             cursor.execute("SELECT Passport_number, Birth_date FROM Registered_client WHERE Email = %s", (email,))
             user = cursor.fetchone()
             user['type'] = 'ADULT' if (datetime.now().date() - user['Birth_date']).days // 365 < 18 else 'CHILD'
+			# אם גיל קטן מ18 צריך להיות ילד כאן זה הפוך
             cursor.close()
             conn.close()
         else:
