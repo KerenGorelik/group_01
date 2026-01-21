@@ -1069,19 +1069,19 @@ def admin_create_flight():
         arr_dt = dep_dt + timedelta(minutes=dur)
 
         query = """
-            SELECT p.Plane_id, p.Manufacturer, p.Size
+            SELECT p.Plane_id
             FROM Plane p
             WHERE NOT EXISTS (
-                SELECT 1
-                FROM Flight f2
+                SELECT 1 FROM Flight f2
                 JOIN Flying_route fr2 ON f2.Route_id = fr2.Route_id
                 WHERE f2.Plane_id = p.Plane_id
-                AND f2.Departure_date = %s
-                AND TIMESTAMP(f2.Departure_date, f2.Departure_time) < %s
-                AND TIMESTAMP(f2.Departure_date, f2.Departure_time)
-                        + INTERVAL fr2.Duration MINUTE > %s
+                -- Existing Start < New End
+                AND TIMESTAMP(f2.Departure_date, f2.Departure_time) < %s 
+                -- Existing End > New Start
+                AND ADDTIME(TIMESTAMP(f2.Departure_date, f2.Departure_time), SEC_TO_TIME(fr2.Duration * 60)) > %s
             )
         """
+
         cursor.execute(query, (departure_date, dep_dt, arr_dt))
         results = cursor.fetchall()
 
