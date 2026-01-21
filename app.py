@@ -1375,6 +1375,7 @@ def passenger_count(flight_number):
         else:
             user = None
         return redirect(url_for('passenger_details', flight_number=flight_number, count=count, role=get_user_role(), user=user))
+		#הבעיה: את מנסה להעביר user (dict) ב־query string. זה לא יציב/לא מומלץ, ובפועל passenger_details גם לא משתמש בזה.
 
     return render_template('passenger_count.html', flight_number=flight_number)
 
