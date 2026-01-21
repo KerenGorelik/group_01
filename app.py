@@ -1048,20 +1048,24 @@ def admin_create_flight():
     
 
         # check plane availability
-        dep_time_raw = request.form['departure_time']
 
+        # date
+        departure_date = datetime.strptime(
+            request.form['departure_date'],
+            "%Y-%m-%d"
+        ).date()
+
+        # time
+        dep_time_raw = request.form['departure_time']
         if isinstance(dep_time_raw, str):
             dep_time = datetime.strptime(dep_time_raw, "%H:%M").time()
         elif isinstance(dep_time_raw, timedelta):
             dep_time = (datetime.min + dep_time_raw).time()
         else:
-            dep_time = dep_time_raw  # already a datetime.time
+            dep_time = dep_time_raw
 
-        dep_dt = datetime.combine(
-            departure_date,
-            dep_time
-        )
-
+        # combine
+        dep_dt = datetime.combine(departure_date, dep_time)
         arr_dt = dep_dt + timedelta(minutes=dur)
 
         query = """
