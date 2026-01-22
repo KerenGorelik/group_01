@@ -1528,7 +1528,8 @@ def flight_view(flight_number):
                     f.Flight_number = %s
             """
     cursor.execute(query, (flight_number,))
-    flights = cursor.fetchall()
+    flights = cursor.fetchone()
+    cursor.fetchall()
 
     # calculate arrival time
     dep_time = time_handle_normalize(flights['Departure_time'])
