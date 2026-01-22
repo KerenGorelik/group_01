@@ -37,6 +37,10 @@
 
   <button type="submit">Assign</button>
 </form>
+<form method="POST" action="{{ url_for('assign_crew') }}">
+  <input type="hidden" name="flight_number" value="{{ flight_number }}">
+  <button type="submit" name="action" value="delete">Delete Flight</button>
+</form>
 {% if error %}
   <div class="error-box">
     {{ error }}

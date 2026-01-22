@@ -1274,6 +1274,19 @@ def assign_crew():
         return "Forbidden", 403
 
     if request.method == 'POST':
+        action = request.form.get('action')
+
+        # --------- DELETE FLOW ----------
+        if action == 'delete':
+            cursor.execute("DELETE FROM Seats_in_flight WHERE Flight_number=%s", (flight_number,))
+            cursor.execute("DELETE FROM Flight_pricing WHERE Flight_number=%s", (flight_number,))
+            cursor.execute("DELETE FROM Flight WHERE Flight_number=%s", (flight_number,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return redirect(url_for('admin_dashboard'))
+        
+        # ---------- ASSIGN CREW FLOW ----------
         flight_number = request.form.get('flight_number')
         pilots = request.form.getlist('pilots')
         stewards = request.form.getlist('stewards')
