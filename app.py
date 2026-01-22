@@ -1915,6 +1915,7 @@ def manage_booking_result():
         if not prices:
             b['flight_info'] = None
             b['seat_prices'] = []
+            b['error'] = "No seat pricing information found."
         else:
             b['flight_info'] = {
                 'Departure_date': prices[0]['Departure_date'],
@@ -1922,6 +1923,7 @@ def manage_booking_result():
                 'Origin_airport': prices[0]['Origin_airport'],
                 'Destination_airport': prices[0]['Destination_airport']
             }
+            b['error'] = None
             b['seat_prices'] = prices
 
         total_price = sum(p['Price'] for p in prices)

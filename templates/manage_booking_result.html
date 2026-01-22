@@ -22,15 +22,15 @@
   {% else %}
     <p>Flight Details: N/A</p>
   {% endif %}  
-  <p>Seats:
     {% for s in b.seats %}
+     <p>Seats:
       {{ s.Row_num }}{{ s.Col_num }}
-  </p>
+    </p>
   <p>Price: {{ b.total_price }}</p>
   <br>
   <p>Refund: {{ b.refund }} </p>
     {% endfor %}
-  
+  {{b.error}}
 
   {% if b.Booking_status == 'ACTIVE' %}
     <form method="POST" action="{{ url_for('cancel_booking', booking_number=b.Booking_number) }}">
