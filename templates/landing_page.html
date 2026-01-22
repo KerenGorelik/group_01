@@ -33,29 +33,38 @@
 
   <button type="submit">Search</button>
 </form>
-<form method="GET" action="{{ url_for('manage_booking') }}">
-  <button type="submit">manage-booking</button>
-</form>
-<form method="GET" action="{{ url_for('logout') }}">
-  <button type="submit">Log Out</button>
-</form>
 {% if flights is defined %}
   {% if flights %}
     <h2>Results</h2>
-    <ul>
+
+    <ul class="results-grid">
       {% for flight in flights %}
-      <a href="{{ url_for('flight_view', flight_number=flight['Flight_number']) }}">
         <li>
-          {{ flight.Origin_airport }} → {{ flight.Destination_airport }}
-          | {{ flight.Departure_date }}
-          | {{ flight.Departure_time }}
-          | ₪{{ flight.Price }}
+          <a class="result-card" href="{{ url_for('flight_view', flight_number=flight['Flight_number']) }}">
+            <div class="result-top">
+              <span class="result-route">{{ flight.Origin_airport }} → {{ flight.Destination_airport }}</span>
+              <span class="result-price">₪{{ flight.Price }}</span>
+            </div>
+
+            <div class="result-bottom">
+              <span>{{ flight.Departure_date }}</span>
+              <span>{{ flight.Departure_time }}</span>
+            </div>
+          </a>
         </li>
-      </a>
-      <br>
       {% endfor %}
     </ul>
+
+    <div class="post-results-actions">
+      <a class="flytau-btn flytau-btn--primary" href="{{ url_for('manage_booking') }}">Manage booking</a>
+      <a class="flytau-btn flytau-btn--ghost" href="{{ url_for('logout') }}">Log Out</a>
+    </div>
+
   {% else %}
+    <p>No flights found.</p>
+  {% endif %}
+{% endif %}
+
     <p>No flights found.</p>
   {% endif %}
 {% endif %}
