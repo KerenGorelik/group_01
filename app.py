@@ -57,10 +57,22 @@ def get_user_role():
     conn.close()
     return 'guest'
 
+def time_handle_normalize(departure_time):
+    # normalize departure time
+    if isinstance(departure_time, str):
+        # could be "14:30" or "14:30:00"
+        try:
+            dep_time = datetime.strptime(departure_time, "%H:%M").time()
+        except ValueError:
+            dep_time = datetime.strptime(departure_time, "%H:%M:%S").time()
+    else:
+        dep_time = departure_time  # already a time object
+    return dep_time
+
 def update_flight_status(flight_number):
 # runs periodically to update flight status based on current time
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
     now = datetime.now()
     cursor.execute(""" 
         SELECT f.Flight_number, f.Departure_date, f.Departure_time, fr.Duration
@@ -108,9 +120,9 @@ def get_available_planes(flight_number):
     cursor.execute(query, (flight_number,))
     flight = cursor.fetchone()
     # defining departure and arrival datetimes
+
     dep_time_td = flight['Departure_time']   # timedelta
     dep_time = (datetime.min + dep_time_td).time()
-
     dep_dt = datetime.combine(
         flight['Departure_date'],
         dep_time
