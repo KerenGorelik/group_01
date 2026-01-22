@@ -30,12 +30,6 @@
 
 *{ box-sizing:border-box; }
 
-html { height: 100%; }
-
-body{
-  height: auto;       /* חשוב! */
-  min-height: 100vh;  /* שהרקע יכסה תמיד */
-}
 
 
 body{
@@ -725,6 +719,7 @@ html::before{
   background-size: 240px 240px;
   filter: blur(.2px);
 }
+
 
 
 
