@@ -49,7 +49,7 @@
     {% endif %}
     <label>Status</label>
     <select name="status" required>
-        {% for s in ['ACTIVE', 'CANCELLED', 'DELAYED'] %}
+        {% for s in ['ACTIVE', 'SYSTEM_CANCELLED', 'DELAYED'] %}
             <option value="{{ s }}"
               {% if s == flight.Flight_status %}selected{% endif %}>
               {{ s }}
