@@ -30,7 +30,13 @@
 
 *{ box-sizing:border-box; }
 
-html, body{ height:100%; }
+html { height: 100%; }
+
+body{
+  height: auto;       /* חשוב! */
+  min-height: 100vh;  /* שהרקע יכסה תמיד */
+}
+
 
 body{
   margin:0;
@@ -687,9 +693,7 @@ p:where(:not(.error-box)){
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(234,242,255,.22);
   box-shadow: 0 14px 28px rgba(0,0,0,.35);
-}
-html, body{
-  min-height: 100%;
-}
+
+
 
 
