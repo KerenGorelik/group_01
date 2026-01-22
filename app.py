@@ -57,6 +57,42 @@ def get_user_role():
     conn.close()
     return 'guest'
 
+def update_flight_status(flight_number):
+# runs periodically to update flight status based on current time
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now = datetime.now()
+    cursor.execute(""" 
+        SELECT f.Flight_number, f.Departure_date, f.Departure_time, fr.Duration
+        FROM Flight f
+        JOIN Flying_route fr ON f.Route_id = fr.Route_id
+        WHERE f.Flight_number = %s
+    """, (flight_number,))
+    flight = cursor.fetchone()
+
+    if not flight:
+        return
+    # normalize departure time
+    dep_time_raw = flight['Departure_time']
+
+    if isinstance(dep_time_raw, str):
+        # could be "14:30" or "14:30:00"
+        try:
+            dep_time = datetime.strptime(dep_time_raw, "%H:%M").time()
+        except ValueError:
+            dep_time = datetime.strptime(dep_time_raw, "%H:%M:%S").time()
+    else:
+        dep_time = dep_time_raw  # already a time object
+
+    dep_dt = datetime.combine(flight['Departure_date'], dep_time)
+    arr_dt = dep_dt + timedelta(minutes=flight['Duration'])
+
+    status = 'LANDED' if now > arr_dt else 'ACTIVE'
+
+    cursor.execute("""
+        UPDATE Flight SET Flight_status = %s WHERE Flight_number = %s
+    """, (status, flight_number))
+
 def get_available_planes(flight_number):
     """Return planes not assigned to conflicting flights."""
     conn = get_db_connection()
@@ -455,6 +491,9 @@ def admin_dashboard():
 
     cursor.execute("SELECT * FROM Flight ORDER BY Departure_date, Departure_time ASC")
     flights= cursor.fetchall()
+
+    for flight in flights:
+        update_flight_status(flight['Flight_number'])
 
     cursor.execute("SELECT * FROM Pilot")
     pilots= cursor.fetchall()
@@ -1444,6 +1483,8 @@ def search():
         cursor.execute(query, (origin, destination))
 
     flights = cursor.fetchall()
+    for flight in flights:
+        update_flight_status(flight['Flight_number'])
     cursor.close()
     conn.close()
 
