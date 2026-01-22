@@ -742,4 +742,14 @@ form input[type="submit"] + p{
 .post-results-actions a:hover{ filter: brightness(1.05); }
 .post-results-actions a:active{ transform: translateY(1px); }
 
+.info-card{
+  width: var(--container);
+  margin: 18px auto 18px;   /* ממורכז */
+}
+
+.info-card p{
+  width: 100%;              /* שלא ייקבע ל-var(--container) שוב */
+  margin: 0 0 10px;
+}
+
 
