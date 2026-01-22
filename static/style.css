@@ -763,4 +763,48 @@ form .crew-section-title{
   white-space: nowrap;   /* שלא ישבור שורה */
 }
 
+/* Titles inside the form: make them full-width "pill" so they won't get clipped */
+form .crew-section-title{
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  padding: 10px 12px;
+  margin: 10px 0 6px;
+
+  border-radius: 14px;
+  border: 1px solid rgba(234,242,255,.16);
+  background: rgba(0,0,0,.12);
+
+  font-weight: 900;
+  color: rgba(234,242,255,.92);
+
+  /* never overflow outside the card */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  direction: ltr;       /* Pilots/Stewards */
+  text-align: left;
+}
+
+/* Make each checkbox row safe for long names */
+form label.crew-item{
+  width: 100%;
+}
+
+/* The name text must be allowed to shrink inside flex */
+form label.crew-item .crew-name{
+  flex: 1;
+  min-width: 0;
+
+  direction: rtl;       /* Hebrew names */
+  text-align: right;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 
