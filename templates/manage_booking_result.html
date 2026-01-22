@@ -30,7 +30,10 @@
   <br>
   <p>Refund: {{ b.refund }} </p>
     {% endfor %}
-  {{b.error}}
+ {% if b.error %}
+  <p class="error">{{ b.error }}</p>
+{% endif %}
+
 
   {% if b.Booking_status == 'ACTIVE' %}
     <form method="POST" action="{{ url_for('cancel_booking', booking_number=b.Booking_number) }}">
