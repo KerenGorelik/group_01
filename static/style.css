@@ -875,5 +875,22 @@ form .crew-section-title{
   white-space: nowrap;
 }
 
+/* titles should sit above the checkbox list */
+form .crew-section-title{
+  display: block;
+  width: 100%;
+  flex: 0 0 100%;        /* אם ההורה flex */
+  grid-column: 1 / -1;   /* אם ההורה grid */
+  align-self: stretch;
+
+  margin: 0 0 10px;      /* פחות רווח למעלה, קצת מתחת */
+  padding: 10px 12px;
+
+  text-align: left;
+}
+form label.crew-item{
+  width: 100%;
+}
+
 
 
