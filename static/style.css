@@ -693,6 +693,39 @@ p:where(:not(.error-box)){
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(234,242,255,.22);
   box-shadow: 0 14px 28px rgba(0,0,0,.35);
+/* --- FIX: background should belong to html (not body) --- */
+html{
+  min-height: 100%;
+  background:
+    radial-gradient(1100px 700px at 22% 10%, rgba(39,215,255,.18), transparent 62%),
+    radial-gradient(950px 650px at 82% 20%, rgba(47,107,255,.34), transparent 58%),
+    radial-gradient(900px 650px at 50% 92%, rgba(47,107,255,.20), transparent 60%),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
+  background-attachment: fixed; /* חשוב: מונע "קפיצות" בגלילה */
+}
+
+body{
+  background: transparent; /* הגוף שקוף כדי שה-html יראה תמיד */
+  min-height: 100vh;
+}
+
+/* Stars overlay on html (covers whole screen always) */
+html::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: .22;
+  background-image:
+    radial-gradient(circle at 10% 20%, #fff 1px, transparent 2px),
+    radial-gradient(circle at 35% 55%, #fff 1px, transparent 2px),
+    radial-gradient(circle at 75% 30%, #fff 1px, transparent 2px),
+    radial-gradient(circle at 65% 78%, #fff 1px, transparent 2px),
+    radial-gradient(circle at 90% 60%, #fff 1px, transparent 2px);
+  background-size: 240px 240px;
+  filter: blur(.2px);
+}
+
 
 
 
