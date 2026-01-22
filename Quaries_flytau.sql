@@ -59,3 +59,49 @@ WHERE f.Flight_status IN ('LANDED', 'FULLY BOOKED', 'ACTIVE')
 GROUP BY p.Size, p.Manufacturer, c.Class_type;
 
 
+
+
+SELECT
+    p.Employee_id,
+    'PILOT' AS role,
+    COALESCE(SUM(CASE
+        WHEN fr.Duration <= 360 THEN fr.Duration / 60.0
+        ELSE 0
+    END), 0) AS sum_short_duration,
+    COALESCE(SUM(CASE
+        WHEN fr.Duration > 360 THEN fr.Duration / 60.0
+        ELSE 0
+    END), 0) AS sum_long_duration
+FROM Pilot p
+LEFT JOIN Pilots_in_flight pif
+    ON pif.Employee_id = p.Employee_id
+LEFT JOIN Flight f
+    ON f.Flight_number = pif.Flight_number
+   AND f.Flight_status = 'LANDED'
+LEFT JOIN Flying_route fr
+    ON fr.Route_id = f.Route_id
+GROUP BY p.Employee_id
+
+UNION ALL
+
+SELECT
+    s.Employee_id,
+    'STEWARD' AS role,
+    COALESCE(SUM(CASE
+        WHEN fr.Duration <= 360 THEN fr.Duration / 60.0
+        ELSE 0
+    END), 0) AS sum_short_duration,
+    COALESCE(SUM(CASE
+        WHEN fr.Duration > 360 THEN fr.Duration / 60.0
+        ELSE 0
+    END), 0) AS sum_long_duration
+FROM Steward s
+LEFT JOIN Stewards_in_flight sif
+    ON sif.Employee_id = s.Employee_id
+LEFT JOIN Flight f
+    ON f.Flight_number = sif.Flight_number
+   AND f.Flight_status = 'LANDED'
+LEFT JOIN Flying_route fr
+    ON fr.Route_id = f.Route_id
+GROUP BY s.Employee_id;
+
