@@ -267,9 +267,12 @@ def handle_flight_update(flight_number):
         request.form['departure_date'], "%Y-%m-%d"
     ).date()
 
-    departure_time = datetime.strptime(
-        request.form['departure_time'], "%H:%M"
-    ).time()
+    time_str = request.form['departure_time']
+
+    try:
+        departure_time = datetime.strptime(time_str, "%H:%M").time()
+    except ValueError:
+        departure_time = datetime.strptime(time_str, "%H:%M:%S").time()
 
     dep_dt = datetime.combine(departure_date, departure_time)
     now = datetime.now()
