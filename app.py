@@ -1531,8 +1531,7 @@ def flight_view(flight_number):
     flights = cursor.fetchall()
 
     # calculate arrival time
-    dep_time_td = flights['Departure_time']   # timedelta
-    dep_time = (datetime.min + dep_time_td).time()
+    dep_time = time_handle_normalize(flights['Departure_time'])
 
     dep_dt = datetime.combine(
         flights['Departure_date'],
