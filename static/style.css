@@ -807,4 +807,49 @@ form label.crew-item .crew-name{
   text-overflow: ellipsis;
 }
 
+/* crew page: don't clip section titles */
+form.crew-form{
+  overflow: visible !important;
+}
+
+form.crew-form .crew-section-title{
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  padding: 10px 12px;
+  margin: 12px 0 8px;
+
+  border-radius: 14px;
+  border: 1px solid rgba(234,242,255,.16);
+  background: rgba(0,0,0,.12);
+
+  font-weight: 900;
+  color: rgba(234,242,255,.92);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  direction: ltr;
+  text-align: left;
+}
+
+/* keep names inside each row */
+form.crew-form label.crew-item{ width: 100%; }
+
+form.crew-form label.crew-item .crew-name{
+  flex: 1;
+  min-width: 0;
+
+  direction: rtl;
+  text-align: right;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
 
