@@ -752,4 +752,15 @@ form input[type="submit"] + p{
   margin: 0 0 10px;
 }
 
+form .crew-section-title{
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 12px;     /* נותן מרווח פנימי כדי שלא ייחתך */
+  margin: 6px 0 2px;
+  font-weight: 900;
+  color: rgba(234,242,255,.92);
+  white-space: nowrap;   /* שלא ישבור שורה */
+}
+
 
