@@ -1900,7 +1900,8 @@ def manage_booking_result():
             SELECT fp.Price, c.Class_type, f.Departure_date, f.Departure_time,
                 fr.Origin_airport, fr.Destination_airport
             FROM Seats_in_order s
-            JOIN Flight f ON f.Flight_number = s.Flight_number
+            JOIN Booking b ON b.Booking_number = s.Booking_number
+            JOIN Flight f ON f.Flight_number = b.Flight_number
             JOIN Flying_route fr ON f.Route_id = fr.Route_id
             JOIN Class c ON c.Plane_id = f.Plane_id
                         AND s.Row_num BETWEEN c.first_row AND c.last_row
