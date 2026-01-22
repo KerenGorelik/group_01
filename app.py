@@ -285,11 +285,11 @@ def handle_flight_update(flight_number):
         if status == 'SYSTEM_CANCELLED':
             if (dep_dt - now).total_seconds() < 72 * 3600:
                 return "Cannot cancel flight within 72 hours of departure."
-
+            status = 'CANCELLED'
             # Cancel active bookings
             cursor.execute("""
                 UPDATE Booking
-                SET Booking_status = 'CUSTOMER_CANCELLED'
+                SET Booking_status = 'SYSTEM_CANCELLED'
                 WHERE Flight_number = %s
                   AND Booking_status = 'ACTIVE'
             """, (flight_number,))
