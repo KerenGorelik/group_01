@@ -1333,7 +1333,12 @@ def assign_crew():
     long_haul_required = is_long_haul_flight(flight_number)
     available_pilots = get_available_pilots(flight_number, long_haul_required)
     available_stewards = get_available_stewards(flight_number, long_haul_required)
-
+    if long_haul_required:
+        if len(available_pilots) < 3 or len(available_stewards) < 6:
+            error = "Not enough available crew members found for this flight."
+    else:
+        if len(available_pilots) < 2 or len(available_stewards) < 3:
+            error = "Not enough available crew members found for this flight."
     return render_template(
         'assign_crew.html',
         flight_number=flight_number,
