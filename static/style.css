@@ -536,3 +536,40 @@ ul.note li{
   background: transparent;
 }
 
+/* Prevent any horizontal overflow that can show stray text */
+html, body{
+  overflow-x: hidden;
+}
+
+/* Seat table: keep seat labels inside the cell */
+form table{
+  table-layout: fixed;
+  width: 100%;
+}
+
+form table td, form table th{
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Override the global label style ONLY inside the seats table */
+form table label{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: 100%;
+  margin: 0;
+  padding: 8px 6px;
+
+  border-radius: 12px;
+  border: 1px solid rgba(234,242,255,.16);
+  background: rgba(0,0,0,.10);
+}
+
+/* Radio inside seat label shouldn't push layout */
+form table input[type="radio"]{
+  margin: 0;
+}
+
