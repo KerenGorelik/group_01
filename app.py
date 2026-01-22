@@ -1719,7 +1719,8 @@ def order_summary(flight_number):
              AND s.Row_num = %s
              AND s.Col_num = %s
             WHERE fp.Flight_number = %s
-        """, (plane_id, seat['row'], seat['col'], flight_number))
+                    AND fp.Plane_id = %s
+        """, (plane_id, seat['row'], seat['col'], flight_number, plane_id))
 
         row = cursor.fetchone()
         price = row['Price'] if row else 0
