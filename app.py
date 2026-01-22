@@ -1926,7 +1926,7 @@ def manage_booking_result():
             b['seat_prices'] = prices
 
         total_price = sum(p['Price'] for p in prices)
-        if b['booking_status'] != 'ACTIVE':
+        if b['Booking_status'] != 'ACTIVE':
             cursor.execute("""
                 SELECT f.Departure_date, f.Departure_time,
                     fr.Origin_airport, fr.Destination_airport
