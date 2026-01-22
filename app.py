@@ -1926,7 +1926,17 @@ def manage_booking_result():
             b['seat_prices'] = prices
 
         total_price = sum(p['Price'] for p in prices)
+        if b['booking_status'] != 'ACTIVE':
+            cursor.execute("""
+                SELECT f.Departure_date, f.Departure_time,
+                    fr.Origin_airport, fr.Destination_airport
+                FROM Flight f
+                JOIN Flying_route fr ON f.Route_id = fr.Route_id
+                WHERE f.Flight_number = %s
+            """, (b['Flight_number'],))
 
+            flight = cursor.fetchone()
+            b['flight_info'] = flight
         # refund logic (unchanged semantics)
         if b['Booking_status'] == 'CUSTOMER_CANCELLED':
             b['refund'] = total_price * 0.05
