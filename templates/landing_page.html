@@ -26,7 +26,9 @@
 
   <button type="submit">Search</button>
 </form>
-
+<form method="POST" action="{{ url_for('manage-booking') }}">
+  <button type="submit">manage-booking</button>
+</form>
 {% if flights is defined %}
   {% if flights %}
     <h2>Results</h2>
