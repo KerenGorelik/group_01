@@ -2024,11 +2024,6 @@ def cancel_booking(booking_number):
               AND Col_num = %s
         """, (flight_number, s['Row_num'], s['Col_num']))
 
-    cursor.execute("""
-        DELETE FROM Seats_in_order
-        WHERE Booking_number = %s
-    """, (booking_number,))
-
     conn.commit()
     cursor.close()
     conn.close()
