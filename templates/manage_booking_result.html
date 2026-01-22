@@ -35,7 +35,7 @@
   {% if b.Booking_status == 'ACTIVE' %}
     <form method="POST" action="{{ url_for('cancel_booking', booking_number=b.Booking_number) }}">
       <button type="submit">Cancel Booking</button>
-      <p>Note- Canceling a booking will result in a 5% canceling fee. No flight cancellation is allowed 36 hours prior to departure.</p>
+      <p class="note">Note: Canceling a booking will result in a 5% canceling fee. No flight cancellation is allowed 36 hours prior to departure.</p>
     </form>
   {% endif %}
 {% endfor %}
