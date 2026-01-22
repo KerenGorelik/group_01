@@ -1937,6 +1937,7 @@ def manage_booking_result():
                 WHERE f.Flight_number = %s
             """, (b['Flight_number'],))
             flight = cursor.fetchone()
+            cursor.fetchall()
             b['flight_info'] = flight
             total_price = flight['Price']
         # refund logic (unchanged semantics)
