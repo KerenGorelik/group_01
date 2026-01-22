@@ -573,3 +573,28 @@ form table input[type="radio"]{
   margin: 0;
 }
 
+/* Fix NOTE text (e.g. cancel booking note) – keep it inside the card */
+form small,
+form .note,
+.note,
+p.note{
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 8px;
+
+  /* wrap long text instead of overflowing */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+
+  /* prevent it from "floating" to the left edge */
+  text-align: left;
+}
+
+/* If the note is inside a card-like container, make sure it can't overflow */
+form,
+p{
+  overflow: hidden;
+}
+
