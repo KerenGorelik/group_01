@@ -502,3 +502,37 @@ form.form-inline select{
 @media (max-width: 520px){
   h1{ font-size: 28px; }
 }
+/* Small helper note (no card background) */
+.note,
+p.note,
+ul.note{
+  width: var(--narrow);
+  margin: 10px auto 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  color: rgba(234,242,255,.75);
+  font-size: 12.5px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+/* If note is UL/LI - remove bullet + extra padding */
+ul.note{
+  list-style: none;
+  padding-left: 0;
+}
+ul.note li{
+  margin: 0;
+  padding: 0;
+}
+
+/* Prevent the "p strong" pill styling inside notes */
+.note strong{
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
