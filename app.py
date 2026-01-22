@@ -979,7 +979,6 @@ def edit_flight(flight_number):
 
 @application.route('/admin/create-flight', methods=['GET', 'POST'])
 def admin_create_flight():
-
     error = None
     if get_user_role() != 'manager':
         return "Forbidden", 403
@@ -987,213 +986,161 @@ def admin_create_flight():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Load airports for dropdowns
+    # 1. Load Dropdown Data
     cursor.execute("SELECT DISTINCT Origin_airport FROM Flying_route")
     origins = cursor.fetchall()
-
     cursor.execute("SELECT DISTINCT Destination_airport FROM Flying_route")
     destinations = cursor.fetchall()
-
     cursor.execute("SELECT Plane_id, Manufacturer FROM Plane")
     planes = cursor.fetchall()
 
     if request.method == 'POST':
+        # 2. Capture Form Data
         origin = request.form['origin']
         destination = request.form['destination']
-        departure_date = request.form['departure_date']
-        departure_time = request.form['departure_time']
         plane_id = request.form['plane_id']
         price = request.form['price']
-        manager_id = session['manager_employee_id']
+        manager_id = session.get('manager_employee_id', 1) # Fallback ID if session missing
 
-        # Find route
+        # 3. Check Route
         cursor.execute("""
-            SELECT Route_id, Duration
-            FROM Flying_route
+            SELECT Route_id, Duration FROM Flying_route
             WHERE Origin_airport = %s AND Destination_airport = %s
         """, (origin, destination))
-
         route = cursor.fetchone()
-        dur = route['Duration'] if route else None
-        # if no such route exists
+        
         if not route:
-            cursor.close()
-            conn.close()
-            error = "No such route exists."
-            return render_template(
-                'create_flight.html',
-                origins=origins,
-                destinations=destinations,
-                planes=planes,
-                error=error
-            )
+            cursor.close(); conn.close()
+            return render_template('create_flight.html', origins=origins, destinations=destinations, planes=planes, error="No such route exists.")
 
         route_id = route['Route_id']
+        dur = route['Duration']
 
-        # check plane id vs route compatibility
-        cursor.execute(""" SELECT Size FROM Plane WHERE Plane_id = %s """, (plane_id,))
-        plane = cursor.fetchone()
-        plane_size = plane['Size'] if plane else None
+        # 4. Check Plane Size Suitability
+        cursor.execute("SELECT Size FROM Plane WHERE Plane_id = %s", (plane_id,))
+        plane_data = cursor.fetchone()
+        plane_size = plane_data['Size']
+
         if plane_size == 'SMALL' and dur > 180:
-            cursor.close()
-            conn.close()
-            error = "Selected plane is not suitable for this long-haul route."
-            return render_template(
-                'create_flight.html',
-                origins=origins,
-                destinations=destinations,
-                planes=planes,
-                error=error
-            )
-    
+            cursor.close(); conn.close()
+            return render_template('create_flight.html', origins=origins, destinations=destinations, planes=planes, error="Plane too small for long-haul.")
 
-        # check plane availability
-
-        # date
-        departure_date = datetime.strptime(
-            request.form['departure_date'],
-            "%Y-%m-%d"
-        ).date()
-
-        # time
+        # 5. Process Date/Time
+        dep_date_obj = datetime.strptime(request.form['departure_date'], "%Y-%m-%d").date()
         dep_time_raw = request.form['departure_time']
+        
+        # Normalize time input
         if isinstance(dep_time_raw, str):
-            dep_time = datetime.strptime(dep_time_raw, "%H:%M").time()
+            dep_time_obj = datetime.strptime(dep_time_raw, "%H:%M").time()
         elif isinstance(dep_time_raw, timedelta):
-            dep_time = (datetime.min + dep_time_raw).time()
+            dep_time_obj = (datetime.min + dep_time_raw).time()
         else:
-            dep_time = dep_time_raw
+            dep_time_obj = dep_time_raw
 
-        # combine
-        dep_dt = datetime.combine(departure_date, dep_time)
+        # Calculate Timestamps
+        dep_dt = datetime.combine(dep_date_obj, dep_time_obj)
         arr_dt = dep_dt + timedelta(minutes=dur)
 
-        query = """
-            SELECT p.Plane_id
-            FROM Plane p
-            WHERE NOT EXISTS (
-                SELECT 1 FROM Flight f2
-                JOIN Flying_route fr2 ON f2.Route_id = fr2.Route_id
-                WHERE f2.Plane_id = p.Plane_id
-                -- Existing Start < New End
-                AND TIMESTAMP(f2.Departure_date, f2.Departure_time) < %s 
-                -- Existing End > New Start
-                AND ADDTIME(TIMESTAMP(f2.Departure_date, f2.Departure_time), SEC_TO_TIME(fr2.Duration * 60)) > %s
-            )
+        # ---------------------------------------------------------
+        # CHECK 1: TIME AVAILABILITY
+        # ---------------------------------------------------------
+        # We check if this plane is flying anytime between our Start and End
+        time_query = """
+            SELECT 1 FROM Flight f
+            JOIN Flying_route fr ON f.Route_id = fr.Route_id
+            WHERE f.Plane_id = %s
+            AND TIMESTAMP(f.Departure_date, f.Departure_time) < %s
+            AND ADDTIME(TIMESTAMP(f.Departure_date, f.Departure_time), SEC_TO_TIME(fr.Duration * 60)) > %s
         """
+        cursor.execute(time_query, (plane_id, arr_dt, dep_dt))
+        if cursor.fetchone():
+            cursor.close(); conn.close()
+            return render_template('create_flight.html', origins=origins, destinations=destinations, planes=planes, error="Plane is already in the air during this time.")
 
-        cursor.execute(query, (arr_dt, dep_dt))
-        results = cursor.fetchall()
+        # ---------------------------------------------------------
+        # CHECK 2: LOCATION CONTINUITY
+        # ---------------------------------------------------------
+        # Find the very last flight this plane finished BEFORE our new departure
+        loc_query = """
+            SELECT fr.Destination_airport
+            FROM Flight f
+            JOIN Flying_route fr ON f.Route_id = fr.Route_id
+            WHERE f.Plane_id = %s
+            AND TIMESTAMP(f.Departure_date, f.Departure_time) < %s
+            ORDER BY TIMESTAMP(f.Departure_date, f.Departure_time) DESC
+            LIMIT 1
+        """
+        cursor.execute(loc_query, (plane_id, dep_dt))
+        last_flight = cursor.fetchone()
 
-        available_plane_ids = {r['Plane_id'] for r in results}
+        # If the plane has flown before, verify it landed at our new Origin
+        if last_flight:
+            last_location = last_flight['Destination_airport']
+            if last_location != origin:
+                cursor.close(); conn.close()
+                error_msg = f"Logistics Error: Plane is currently at {last_location}, cannot depart from {origin}."
+                return render_template('create_flight.html', origins=origins, destinations=destinations, planes=planes, error=error_msg)
 
-        if plane_id not in available_plane_ids:
-            cursor.close()
-            conn.close()
-            error = "No available planes for this flight."
-            return render_template(
-                'create_flight.html',
-                origins=origins,
-                destinations=destinations,
-                planes=planes,
-                error=error
-            )
-
-        # Create flight- get flight number
+        # ---------------------------------------------------------
+        # INSERT FLIGHT
+        # ---------------------------------------------------------
         cursor.execute("SELECT MAX(Flight_number) AS max_num FROM Flight")
-        max_flight = cursor.fetchone()
-        if max_flight['max_num'] is None:
-            flight_number = 1
-        else:
-            flight_number = max_flight['max_num'] + 1
+        res = cursor.fetchone()
+        flight_number = (res['max_num'] or 0) + 1
 
         cursor.execute("""
             INSERT INTO Flight (Flight_number, Plane_id, Route_id, Departure_date, Departure_time, Flight_status)
             VALUES (%s, %s, %s, %s, %s, 'ACTIVE')
-        """, (flight_number, plane_id, route_id, departure_date, departure_time))
+        """, (flight_number, plane_id, route_id, dep_date_obj, dep_time_obj))
 
-        # Set pricing
+        # Insert Pricing (Economy)
         cursor.execute("""
             INSERT INTO Flight_pricing (Flight_number, Plane_id, Price, Employee_id, Class_type)
             VALUES (%s, %s, %s, %s, 'ECONOMY')
         """, (flight_number, plane_id, price, manager_id))
 
+        # Insert Pricing (Business - Optional)
         if plane_size == 'LARGE':
-            business_price = float(price) * 1.5  # Business class is 50% more expensive; adjust as needed in edit flights
             cursor.execute("""
                 INSERT INTO Flight_pricing (Flight_number, Plane_id, Price, Employee_id, Class_type)
                 VALUES (%s, %s, %s, %s, 'BUSINESS')
-            """, (flight_number, plane_id, business_price, manager_id))
+            """, (flight_number, plane_id, float(price) * 1.5, manager_id))
 
-        manager_id = session['manager_employee_id']
-        is_big_plane = plane_size == 'LARGE' # Determine plane size
-        # Build Seating for the flight
-
-        # ECONOMY
-        cursor.execute("""
-            SELECT first_row, last_row, first_col, last_col
-            FROM Class
-            WHERE Plane_id = %s AND Class_type = %s
-        """, (plane_id, 'ECONOMY'))
-
-        economy_class = cursor.fetchone()
-
-        for row in range(economy_class['first_row'], economy_class['last_row'] + 1):
-            for col_ord in range(
-                ord(economy_class['first_col']),
-                ord(economy_class['last_col']) + 1
-            ):
-                col = chr(col_ord)
-                cursor.execute(
-                    """
-                    INSERT INTO Seats_in_flight
-                    (Flight_number, Plane_id, Row_num, Col_num, Availability)
-                    VALUES (%s, %s, %s, %s, 1)
-                    """,
-                    (flight_number, plane_id, row, col)
-                )
-
-        # BUSINESS (only for big planes)
-        if is_big_plane:
+        # ---------------------------------------------------------
+        # GENERATE SEATS
+        # ---------------------------------------------------------
+        # Helper function to generate seats to avoid duplicate code
+        def generate_seats(class_type):
             cursor.execute("""
                 SELECT first_row, last_row, first_col, last_col
-                FROM Class
-                WHERE Plane_id = %s AND Class_type = %s
-            """, (plane_id, 'BUSINESS'))
+                FROM Class WHERE Plane_id = %s AND Class_type = %s
+            """, (plane_id, class_type))
+            seat_conf = cursor.fetchone()
+            
+            if seat_conf:
+                seats_data = []
+                for r in range(seat_conf['first_row'], seat_conf['last_row'] + 1):
+                    for c_ord in range(ord(seat_conf['first_col']), ord(seat_conf['last_col']) + 1):
+                        seats_data.append((flight_number, plane_id, r, chr(c_ord), 1))
+                
+                if seats_data:
+                    cursor.executemany("""
+                        INSERT INTO Seats_in_flight (Flight_number, Plane_id, Row_num, Col_num, Availability)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, seats_data)
 
-            business_class = cursor.fetchone()
-
-            for row in range(business_class['first_row'], business_class['last_row'] + 1):
-                for col_ord in range(
-                    ord(business_class['first_col']),
-                    ord(business_class['last_col']) + 1
-                ):
-                    col = chr(col_ord)
-                    cursor.execute(
-                        """
-                        INSERT INTO Seats_in_flight
-                        (Flight_number, Plane_id, Row_num, Col_num, Availability)
-                        VALUES (%s, %s, %s, %s, 1)
-                        """,
-                        (flight_number, plane_id, row, col)
-                    )
+        generate_seats('ECONOMY')
+        if plane_size == 'LARGE':
+            generate_seats('BUSINESS')
 
         conn.commit()
-        
         cursor.close()
         conn.close()
-
         return redirect(url_for('assign_crew', flight_number=flight_number))
+
     cursor.close()
     conn.close()
-
-    return render_template(
-        'create_flight.html',
-        origins=origins,
-        destinations=destinations,
-        planes=planes,
-        error=error
-    )
+    return render_template('create_flight.html', origins=origins, destinations=destinations, planes=planes, error=error)
 
 @application.route('/admin/assign_crew', methods=['POST', 'GET'])
 def assign_crew():
