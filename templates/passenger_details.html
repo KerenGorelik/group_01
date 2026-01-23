@@ -23,7 +23,7 @@
     </select>
     <input name="email" placeholder="Email" value="{{ user.Email }}" required>
     <label class="field-label" for="birthdate_{{ i }}">Birth Date</label>
-<input id="birthdate_{{ i }}" name="birthdate" type="date" required aria-label="Birth Date">
+  <input id="birthdate_{{ i }}" name="birthdate" type="date" required aria-label="Birth Date" value="{{ user.birth_date }}">
   {% else %}
     <h3>Passenger {{ i }}</h3>
     <input name="name_{{ i }}" placeholder="Full Name" required>
