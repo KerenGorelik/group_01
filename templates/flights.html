@@ -34,6 +34,19 @@
 
 <h1>Flights</h1>
 
+<form method="GET" action="{{ url_for('admin_flights') }}">
+    <label for="status">Filter by Status:</label>
+    <select name="status" id="status">
+        <option value="">All</option>
+        <option value="ACTIVE" {% if selected_status == 'ACTIVE' %}selected{% endif %}>Active</option>
+        <option value="CANCELLED" {% if selected_status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+        <option value="SYSTEM_CANCELLED" {% if selected_status == 'SYSTEM_CANCELLED' %}selected{% endif %}>System Cancelled</option>
+        <option value="LANDED" {% if selected_status == 'LANDED' %}selected{% endif %}>Landed</option>
+        <option value="FULLY BOOKED" {% if selected_status == 'FULLY BOOKED' %}selected{% endif %}>Fully Booked</option>
+    </select>
+    <button type="submit">Filter</button>
+</form>
+
 <table>
     <thead>
         <tr>
@@ -42,7 +55,8 @@
             <th>Destination</th>
             <th>Pilots</th>
             <th>Stewards</th>
-            <th>Status</th>
+            <th>Flight Status</th>
+            <th>Crew Status</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -55,6 +69,7 @@
             <td>{{ flight.Destination_airport }}</td>
             <td>{{ flight.pilot_count }}</td>
             <td>{{ flight.steward_count }}</td>
+            <td>{{ flight.Flight_status }}</td>
             <td>
                 {% if flight.ready %}
                     <span class="ready">READY</span>

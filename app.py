@@ -1043,6 +1043,8 @@ def admin_flights(): # View and manage flights
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+    status_filter = request.args.get('status')
+
     query = """
         SELECT
             f.Flight_number,
@@ -1050,16 +1052,23 @@ def admin_flights(): # View and manage flights
             fr.Destination_airport,
             COUNT(DISTINCT pf.Employee_id) AS pilot_count,
             COUNT(DISTINCT sf.Employee_id) AS steward_count,
-            p.Size
+            p.Size,
+            f.Flight_status
         FROM Flight f
         JOIN Flying_route fr ON f.Route_id = fr.Route_id
         JOIN Plane p ON f.Plane_id = p.Plane_id
         LEFT JOIN Pilots_in_flight pf ON f.Flight_number = pf.Flight_number
         LEFT JOIN Stewards_in_flight sf ON f.Flight_number = sf.Flight_number
-        GROUP BY f.Flight_number, p.Size, fr.Origin_airport, fr.Destination_airport
     """
 
-    cursor.execute(query)
+    params = []
+    if status_filter:
+        query += " WHERE f.Flight_status = %s"
+        params.append(status_filter)
+
+    query += " GROUP BY f.Flight_number, p.Size, fr.Origin_airport, fr.Destination_airport, f.Flight_status"
+
+    cursor.execute(query, params)
     flights = cursor.fetchall()
 
     cursor.close()
@@ -1078,7 +1087,7 @@ def admin_flights(): # View and manage flights
             flight['steward_count'] == required_stewards
         )
 
-    return render_template('flights.html', flights=flights)
+    return render_template('flights.html', flights=flights, selected_status=status_filter)
 
 @handle_errors
 @application.route('/admin/flights/<int:flight_number>/edit', methods=['GET', 'POST'])
