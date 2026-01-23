@@ -948,6 +948,13 @@ form h2, form h3, form strong{
 
   white-space: nowrap;
 }
+.back-home{
+  display: inline-block;          /* לא block */
+  width: auto;                    /* לא 100% */
+  border-bottom: none !important; /* מבטל את הקו הארוך אם הגיע מ-border */
+  text-decoration: underline;     /* אם את רוצה קו רק מתחת לטקסט */
+}
+
 
 
 
