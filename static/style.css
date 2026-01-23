@@ -1228,6 +1228,13 @@ form h2, form h3, form strong{
   cursor: not-allowed;
 }
 
+.back-home{
+  display: block;
+  max-width: 1100px;
+  margin: 14px auto 0;
+  padding: 0 16px;
+}
+
 
 
 
