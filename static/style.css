@@ -1235,6 +1235,101 @@ form h2, form h3, form strong{
   padding: 0 16px;
 }
 
+/* רחב יותר לכל הדף */
+.seat-page{
+  max-width: 1800px;
+  width: min(98vw, 1800px);
+  margin: 0 auto;
+  padding: 0 18px 30px;
+}
+
+/* מבטלים גלילה אופקית */
+.seat-map-scroll{
+  overflow-x: hidden;
+  overflow-y: hidden;
+  padding-bottom: 0;
+}
+
+/* המפה תתאים לרוחב הכרטיס (לא max-content) */
+.seat-map{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* כל שורה תתפרס בלי לגלוש (Grid במקום flex-nowrap) */
+.seat-row{
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(48px, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.seat{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  width: 100%;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  font-weight: 800;
+  cursor: pointer;
+  user-select: none;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
+}
+
+.seat:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.18);
+}
+
+/* מסתירים radio אבל משאירים פעיל */
+.seat-input{
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* מצב נבחר — בולט ממש */
+.seat:has(.seat-input:checked){
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.40);
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.14), 0 12px 26px rgba(0,0,0,0.25);
+  transform: translateY(-1px);
+}
+
+/* “וי” קטן בפינה כשנבחר */
+.seat:has(.seat-input:checked)::after{
+  content: "✓";
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.35);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+/* מושב לא זמין */
+.seat-disabled{
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: rgba(255,255,255,0.05);
+  border-style: dashed;
+}
+
 
 
 
