@@ -13,9 +13,13 @@
 </div>
     <h1>Register for FLYTAU</h1>
     <form method="post" action="{{ url_for('register') }}">
+        <p>Name:</p>
         <input type="text" name="name" placeholder="Name" required><br><br>
+        <p>Email:</p>
         <input type="email" name="email" placeholder="Email" required><br><br>
+        <p>Password:</p>
         <input type="password" name="password" placeholder="Password" required><br><br>
+        <p>Passport Number:</p>
         <input type="text" name="passport_number" placeholder="Passport Number" required><br><br>
         <label class="field-label" for="birth_date">Birth Date</label>
 <input type="date" id="birth_date" name="birth_date" required><br><br>
