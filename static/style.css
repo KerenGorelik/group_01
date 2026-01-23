@@ -793,6 +793,15 @@ form label.crew-item{
   width: 100%;
 }
 
+.back-home{
+  display: block;
+  max-width: 1100px;   /* שימי את אותו max-width שיש לקונטיינר של הכרטיסים */
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 16px;     /* אותו padding כמו התוכן */
+  text-align: left;    /* כדי שיישב באותו קו כמו הטקסט של הכרטיסים */
+}
+
 /* The name text must be allowed to shrink inside flex */
 form label.crew-item .crew-name{
   flex: 1;
@@ -939,6 +948,7 @@ form h2, form h3, form strong{
 
   white-space: nowrap;
 }
+
 
 
 
