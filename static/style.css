@@ -1073,6 +1073,87 @@ form h2, form h3, form strong{
   max-width: 100%;
 }
 
+/* 1) להרחיב את כל העמוד של בחירת כיסאות */
+.seat-page, .seat-container, .content, .main-container {
+  max-width: 1400px;
+  width: min(96vw, 1400px);
+  margin: 0 auto;
+  padding: 0 18px;
+}
+
+/* 2) כרטיס מסביב למפת הכיסאות */
+.seat-map-card{
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.25);
+  backdrop-filter: blur(10px);
+}
+
+/* 3) גלילה אופקית כדי שלא “יימעך” */
+.seat-map-scroll{
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 6px;
+}
+
+/* 4) שהמפה תתפוס את הרוחב הטבעי שלה */
+.seat-map{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: max-content;
+  min-width: 100%;
+}
+
+/* 5) כל שורה לא נשברת */
+.seat-row{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  width: max-content;
+}
+
+/* 6) הכיסאות עצמם – עובד גם אם זה button וגם אם זה label */
+.seat, .seat-btn, label.seat{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  min-width: 54px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* אם אצלך זה input+label */
+.seat-input{ display:none; }
+.seat-input:checked + label.seat{
+  background: rgba(255,255,255,0.16);
+  border-color: rgba(255,255,255,0.28);
+}
+
+/* מצב לא זמין (אם יש לך class כזה) */
+.seat.unavailable, .seat.disabled, label.seat.disabled{
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* רספונסיביות: בטלפון עדיין נוח */
+@media (max-width: 520px){
+  .seat, .seat-btn, label.seat{
+    height: 40px;
+    min-width: 48px;
+  }
+}
+
 
 
 
