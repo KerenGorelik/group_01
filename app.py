@@ -924,14 +924,18 @@ def delete_steward(steward_id):
 
 @handle_errors
 @application.route('/admin/flights', methods=['GET'])
-def admin_flights():  # View and manage flights
+def admin_flights():
     if get_user_role(session) != 'manager':
         abort(403, description="Forbidden")
 
+    # ⚠️ חשוב: אל תתני לפונקציה הזו לדרוס DELAYED.
+    # אם update_flight_status אצלך דורס — תקני אותו בסעיף 2.
+    update_flight_status()
+
+    status_filter = (request.args.get('status') or "").strip()  # "" = All
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-
-    status_filter = request.args.get('status')
 
     query = """
         SELECT
@@ -941,7 +945,7 @@ def admin_flights():  # View and manage flights
             COUNT(DISTINCT pf.Employee_id) AS pilot_count,
             COUNT(DISTINCT sf.Employee_id) AS steward_count,
             p.Size,
-            f.Flight_status
+            COALESCE(NULLIF(TRIM(UPPER(f.Flight_status)), ''), 'ACTIVE') AS Flight_status
         FROM Flight f
         JOIN Flying_route fr ON f.Route_id = fr.Route_id
         JOIN Plane p ON f.Plane_id = p.Plane_id
@@ -950,30 +954,27 @@ def admin_flights():  # View and manage flights
     """
 
     params = []
-    if status_filter:
-        query += " WHERE f.Flight_status = %s"
-        params.append(status_filter)
+    if status_filter != "":
+        query += " WHERE TRIM(UPPER(f.Flight_status)) = %s "
+        params.append(status_filter.strip().upper())
 
-    query += " GROUP BY f.Flight_number, p.Size, fr.Origin_airport, fr.Destination_airport, f.Flight_status"
+    query += """
+        GROUP BY f.Flight_number, p.Size, fr.Origin_airport, fr.Destination_airport, f.Flight_status
+        ORDER BY f.Departure_date, f.Departure_time
+    """
 
     cursor.execute(query, params)
     flights = cursor.fetchall()
-    for f in flights:
-    s = f.get('Flight_status')
-    s = (s or "").strip().upper()
-    f['Flight_status'] = s or "ACTIVE"   # fallback אם יצא ריק/NULL
-
 
     cursor.close()
     conn.close()
 
+    # Crew readiness
     for flight in flights:
         if flight['Size'] == 'LARGE':
-            required_pilots = 3
-            required_stewards = 6
+            required_pilots, required_stewards = 3, 6
         else:
-            required_pilots = 2
-            required_stewards = 3
+            required_pilots, required_stewards = 2, 3
 
         flight['ready'] = (
             flight['pilot_count'] == required_pilots and
@@ -992,9 +993,11 @@ def admin_flights():  # View and manage flights
     return render_template(
         'flights.html',
         flights=flights,
-        selected_status=status_filter or "",
+        selected_status=status_filter.upper() if status_filter else "",
         status_options=status_options
     )
+
+
 
 @handle_errors
 @application.route('/admin/flights/<int:flight_number>/edit', methods=['GET', 'POST'])
