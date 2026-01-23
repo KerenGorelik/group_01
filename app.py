@@ -1560,9 +1560,10 @@ def search():
 
 @handle_errors
 @application.route('/flight_view/<int:flight_number>', methods=['GET','POST'])
-def flight_view(flight_number,class_type):
+def flight_view(flight_number):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+    class_type = request.args.get('class_type')
     query = """
                 SELECT f.* , fr.Origin_airport, fr.Destination_airport, fr.Duration, fp.Price, fp.Class_type
                 FROM 
