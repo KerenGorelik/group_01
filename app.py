@@ -82,7 +82,7 @@ def time_handle_normalize(departure_time):
 
     return dep_time
 
-def update_flight_status(flight_number):
+def update_flight_status():
 # runs periodically to update flight status based on current time
     conn = get_db_connection()
     cursor = conn.cursor()
