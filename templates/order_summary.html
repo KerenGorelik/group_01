@@ -18,22 +18,43 @@
   {{ flight.Departure_date }} at {{ flight.Departure_time }}
 </p>
 
-<h3>Passengers</h3>
-<ul>
-{% for p in passengers %}
-  <li>{{ p.name }} | ({{ p.type }}) | ({{ p.id }})</li>
-{% endfor %}
-</ul>
+<section class="card">
+  <div class="card-head">
+    <h3>Passengers</h3>
+    <span class="count">{{ passengers|length }}</span>
+  </div>
 
-<h3>Seats</h3>
-<ul>
-{% for s in seats %}
-  <li>Seat {{ s.row }}{{ s.col }}</li>
-{% endfor %}
-</ul>
+  <ul class="pill-list">
+    {% for p in passengers %}
+      <li class="pill">
+        <span class="pill-name">{{ p.name }}</span>
+        <span class="badge">{{ p.type }}</span>
+        <span class="badge badge-soft">({{ p.id }})</span>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
 
-<h3>Total Price</h3>
-<p>₪{{ total_price }}</p>
+<section class="card">
+  <div class="card-head">
+    <h3>Seats</h3>
+    <span class="count">{{ seats|length }}</span>
+  </div>
+
+  <div class="chip-row">
+    {% for s in seats %}
+      <span class="chip">Seat {{ s.row }}{{ s.col }}</span>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head">
+    <h3>Total Price</h3>
+  </div>
+  <div class="price-box">₪{{ total_price }}</div>
+</section>
+
 
 <form action="{{ url_for('confirm_booking', flight_number=flight_number) }}" method="POST">
   <button type="submit">Confirm Booking</button>
