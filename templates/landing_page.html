@@ -58,16 +58,15 @@
         </li>
       {% endfor %}
     </ul>
-    
- {% if role == 'client'%}
-    <div class="post-results-actions">
-      <a class="flytau-btn flytau-btn--ghost" href="{{ url_for('logout') }}">Log Out</a>
-    </div>
-    {% endif %}
+
   {% else %}
     <p>No flights found.</p>
   {% endif %}
 {% endif %}
-
+ {% if role == 'client'%}
+    <div class="post-results-actions">
+      <a class="flytau-btn flytau-btn--ghost" href="{{ url_for('logout') }}">Log Out</a>
+    </div>
+  {% endif %}
 </body>
 </html>

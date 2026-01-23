@@ -29,6 +29,14 @@ application.config.update(
 Session(application)
 
 
+def handle_errors(f):
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception as e:
+            return render_template('error.html', error_message=str(e))
+    return wrapper
+
 # --- Database connection ---
 def get_db_connection():
     return mdb.connect(
@@ -500,6 +508,7 @@ def generate_seats_for_plane(plane_id):
     cursor.close()
     conn.close()
 
+@handle_errors
 @application.route('/admin')
 def admin_dashboard():
     if get_user_role() != 'manager':
@@ -525,6 +534,7 @@ def admin_dashboard():
 
 # seat generation to insert seats into planes- intended to be used only once to fill in missing data, but wont break if used again. 
 
+@handle_errors
 @application.route('/admin/generate_all_seats')
 def admin_fix_existing_seats():
     if get_user_role() != 'manager':
@@ -576,6 +586,7 @@ def admin_fix_existing_seats():
     return f"Done. Seats updated: {updated_seats}"
 # admin reports
 
+@handle_errors
 @application.route('/admin/reports')
 def admin_reports():
     if get_user_role() != 'manager':
@@ -703,6 +714,7 @@ GROUP BY s.Employee_id;
 
 # Admin add planes
 
+@handle_errors
 @application.route('/admin/add_plane', methods=['GET', 'POST'])
 def add_plane():
     if get_user_role() != 'manager':
@@ -734,6 +746,7 @@ def add_plane():
 
     return render_template('add_plane.html')
 
+@handle_errors
 @application.route('/admin/add_plane/<int:plane_id>/classes', methods=['GET', 'POST'])
 def add_classes(plane_id):
     if get_user_role() != 'manager':
@@ -782,6 +795,7 @@ def add_classes(plane_id):
 
 # Admin employee management 
 
+@handle_errors
 @application.route('/admin/employees')
 def employees():
     if get_user_role() != 'manager':
@@ -812,6 +826,7 @@ def employees():
     )
 
 # Add employees
+@handle_errors
 @application.route('/admin/employees/add/pilot', methods=['GET', 'POST'])
 def add_pilot():
     if get_user_role() != 'manager':
@@ -848,6 +863,7 @@ def add_pilot():
 
     return render_template('add_pilot.html')
 
+@handle_errors
 @application.route('/admin/employees/add/steward', methods=['GET', 'POST'])
 def add_steward():
     if get_user_role() != 'manager':
@@ -888,6 +904,7 @@ def add_steward():
 
 # Edit employees
 
+@handle_errors
 @application.route('/admin/employees/pilots/<int:pilot_id>/edit', methods=['GET', 'POST'])
 def edit_pilot(pilot_id):
     if get_user_role() != 'manager':
@@ -928,6 +945,7 @@ def edit_pilot(pilot_id):
 
     return render_template('edit_pilot.html', pilot=pilot)
 
+@handle_errors
 @application.route('/admin/employees/Stewards/<int:steward_id>/edit', methods=['GET', 'POST'])
 def edit_steward(steward_id):
     if get_user_role() != 'manager':
@@ -969,6 +987,7 @@ def edit_steward(steward_id):
 
 # Delete employees
 
+@handle_errors
 @application.route('/admin/employees/pilots/<int:pilot_id>/delete', methods=['POST'])
 def delete_pilot(pilot_id):
     if get_user_role() != 'manager':
@@ -1000,6 +1019,7 @@ def delete_pilot(pilot_id):
 
     return redirect(url_for('employees'))
 
+@handle_errors
 @application.route('/admin/employees/stewards/<int:steward_id>/delete', methods=['POST'])
 def delete_steward(steward_id):
     if get_user_role() != 'manager':
@@ -1033,6 +1053,7 @@ def delete_steward(steward_id):
 
 # view and manage flights 
 
+@handle_errors
 @application.route('/admin/flights', methods=['GET'])
 def admin_flights(): # View and manage flights
     if get_user_role() != 'manager':
@@ -1078,6 +1099,7 @@ def admin_flights(): # View and manage flights
 
     return render_template('flights.html', flights=flights)
 
+@handle_errors
 @application.route('/admin/flights/<int:flight_number>/edit', methods=['GET', 'POST'])
 def edit_flight(flight_number):
     if get_user_role() != 'manager':
@@ -1101,6 +1123,7 @@ def edit_flight(flight_number):
 
 
 
+@handle_errors
 @application.route('/admin/create-flight', methods=['GET', 'POST'])
 def admin_create_flight():
     error = None
@@ -1266,6 +1289,7 @@ def admin_create_flight():
     conn.close()
     return render_template('create_flight.html', origins=origins, destinations=destinations, planes=planes, error=error)
 
+@handle_errors
 @application.route('/admin/assign_crew', methods=['POST', 'GET'])
 def assign_crew():
     error = None
@@ -1364,6 +1388,7 @@ def assign_crew():
         error=error
     )
 
+@handle_errors
 @application.route("/")
 def landing_page():
     """Landing page route that redirects based on user role."""
@@ -1381,6 +1406,7 @@ def landing_page():
     # Guests and registered clients see search
     return render_template('landing_page.html', role=role, airports=airports)
 
+@handle_errors
 @application.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -1414,6 +1440,7 @@ def login():
 
     return render_template('login.html')
 
+@handle_errors
 @application.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -1461,11 +1488,13 @@ def register():
     return render_template('register.html')
 
 
+@handle_errors
 @application.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('landing_page'))
 
+@handle_errors
 @application.route('/search', methods=['GET'])
 def search():
     if get_user_role() == 'manager':
@@ -1528,6 +1557,7 @@ def search():
 
     return render_template('landing_page.html', role=get_user_role(), flights=flights, airports=airports)
 
+@handle_errors
 @application.route('/flight_view/<int:flight_number>', methods=['GET','POST'])
 def flight_view(flight_number):
     conn = get_db_connection()
@@ -1562,6 +1592,7 @@ def flight_view(flight_number):
 
     return render_template('flight_view.html', role=get_user_role(), flight=flights)
 
+@handle_errors
 @application.route('/check_out/<int:flight_number>/passengers', methods=['GET', 'POST'])
 def passenger_count(flight_number):
     if request.method == 'POST':
@@ -1582,6 +1613,7 @@ def passenger_count(flight_number):
 
     return render_template('passenger_count.html', flight_number=flight_number)
 
+@handle_errors
 @application.route('/checkout/<int:flight_number>/passengers/details', methods=['GET', 'POST'])
 def passenger_details(flight_number):
     count = int(request.args.get('count'))
@@ -1593,7 +1625,7 @@ def passenger_details(flight_number):
             email = session.get('client_email')
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT Passport_number, Birth_date FROM Registered_client WHERE Email = %s", (email,))
+            cursor.execute("SELECT Passport_number, Birth_date, Email FROM Registered_client WHERE Email = %s", (email,))
             user = cursor.fetchone()
             user['type'] = 'ADULT' if (datetime.now().date() - user['Birth_date']).days // 365 >= 18 else 'CHILD'
             cursor.close()
@@ -1641,6 +1673,7 @@ def passenger_details(flight_number):
         role=get_user_role()
     )
 
+@handle_errors
 @application.route('/checkout/<int:flight_number>/passengers/seat_selection', methods=['GET', 'POST'])
 def seat_selection(flight_number):
     count = int(request.args.get('count'))
@@ -1682,6 +1715,7 @@ def seat_selection(flight_number):
         role=get_user_role()
     )
 
+@handle_errors
 @application.route('/checkout/<int:flight_number>/summary', methods=['GET', 'POST'])
 def order_summary(flight_number):
     passengers = session.get('passengers')
@@ -1761,6 +1795,7 @@ def order_summary(flight_number):
         flight_number=flight_number
     )
 
+@handle_errors
 @application.route('/checkout/<int:flight_number>/confirm', methods=['POST'])
 def confirm_booking(flight_number):
     passengers = session['passengers']
@@ -1820,6 +1855,7 @@ def confirm_booking(flight_number):
 
     return redirect(url_for('booking_success', Booking_number=Booking_number))
 
+@handle_errors
 @application.route('/booking/success/<int:Booking_number>')
 def booking_success(Booking_number):
     conn = get_db_connection()
@@ -1850,6 +1886,7 @@ def booking_success(Booking_number):
 
 # Manage bookings
 
+@handle_errors
 @application.route('/manage-booking', methods=['GET', 'POST'])
 def manage_booking():
     if request.method == 'GET':
@@ -1868,6 +1905,7 @@ def manage_booking():
                             booking_number=booking_number,
                             passport_number=passport_number))
 
+@handle_errors
 @application.route('/manage-booking/result')
 def manage_booking_result():
     method = request.args.get('method')
@@ -1975,6 +2013,7 @@ def manage_booking_result():
     )
 
 
+@handle_errors
 @application.route('/manage-booking/cancel/<int:booking_number>', methods=['POST'])
 def cancel_booking(booking_number):
 
@@ -2050,3 +2089,7 @@ def cancel_booking(booking_number):
 def invalid_route(e):
     return redirect("/")
 
+
+@application.errorhandler(500)
+def internal_error(e):
+    return render_template('error.html', error_message="Internal Server Error"), 500

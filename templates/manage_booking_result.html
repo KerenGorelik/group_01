@@ -27,12 +27,9 @@
       {{ s.Row_num }}{{ s.Col_num }}
     </p>
   <p>Price: {{ b.total_price }}</p>
-  <br>
   <p>Refund: {{ b.refund }} </p>
     {% endfor %}
- {% if b.error %}
-  <p class="error">{{ b.error }}</p>
-{% endif %}
+    <br>
 
 
   {% if b.Booking_status == 'ACTIVE' %}
