@@ -1728,9 +1728,6 @@ def confirm_booking(flight_number):
 
     conn = get_db_connection()
     cursor = conn.cursor()
-
-    if len(seats) != len(set(seats)):
-        abort(400, description= "Error- same seat was selected more than once")
         
     # Create booking
     if get_user_role(session) == 'client':
