@@ -1456,6 +1456,38 @@ h1{ text-align: center; }
 
   overflow-wrap: anywhere;
 }
+.form-note, .form-error{
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+
+  display: block !important;
+  position: relative !important;
+  left: 0 !important;
+  right: auto !important;
+  transform: none !important;
+
+  padding: 12px 16px;
+  border-radius: 18px;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.form-note{
+  margin: 12px 0 18px;
+  background: rgba(255,255,255,0.08);
+  opacity: 0.9;
+}
+
+.form-error{
+  margin: 0 0 12px;
+  background: rgba(255, 80, 80, 0.18);
+  border: 1px solid rgba(255, 120, 120, 0.35);
+  color: #ffd2d2;
+  font-weight: 600;
+}
+
 
 
 
