@@ -16,30 +16,33 @@
         {% for i in range(1, count + 1) %}
   <h3>Passenger {{ i }}</h3>
 
-<table border="1">
-  {% for row_num, row_seats in seats.items() %}
-    <tr>
-      {% for seat in row_seats %}
-        <td>
-          {% if seat.Availability %}
-            <label>
-              <input
-                type="radio"
-                name="seat_{{ i }}"
-                value="{{ seat.Row_num }}{{ seat.Col_num }}"
-                required
-              >
-              {{ seat.Row_num }}{{ seat.Col_num }}
-            </label>
-          {% else %}
-            ❌
-          {% endif %}
-        </td>
+<div class="seat-map-card">
+  <div class="seat-map-scroll">
+    <div class="seat-map">
+      {% for row_num, row_seats in seats.items() %}
+        <div class="seat-row">
+          {% for seat in row_seats %}
+            {% if seat.Availability %}
+              <label class="seat">
+                <input
+                  class="seat-input"
+                  type="radio"
+                  name="seat_{{ i }}"
+                  value="{{ seat.Row_num }}{{ seat.Col_num }}"
+                  required
+                >
+                <span class="seat-label">{{ seat.Row_num }}{{ seat.Col_num }}</span>
+              </label>
+            {% else %}
+              <span class="seat seat-disabled">❌</span>
+            {% endif %}
+          {% endfor %}
+        </div>
       {% endfor %}
-    </tr>
-  {% endfor %}
-</table>
-{% endfor %}
+    </div>
+  </div>
+</div>
+
 
 
         <button type="submit">Confirm Seats</button>
