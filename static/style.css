@@ -1050,6 +1050,29 @@ form h2, form h3, form strong{
   font-size: 18px;
   font-weight: 700;
 }
+/* חשוב: מונע “בריחה” ימינה בגלל padding+border */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* אם משהו עדיין יוצא החוצה – חותך את העודף בתוך הכרטיס */
+.card{
+  overflow: hidden;
+}
+
+/* מוודא שהרשימה לא מוסיפה הזחות/רוחבים מוזרים */
+.pill-list{
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100%;
+}
+
+/* מוודא שה"תיבה" של הלקוח לא תעבור את הכרטיס */
+.pill{
+  width: 100%;
+  max-width: 100%;
+}
+
 
 
 
