@@ -56,7 +56,7 @@ def update_booking_status():
 
     cursor.execute("""
         UPDATE Booking b
-        JOIN Flying_route fr ON b.Route_id = fr.Route_id
+        JOIN Flight f ON b.Flight_number = f.Flight_number
         SET b.Booking_status = 'COMPLETED'
         WHERE
             f.Flight_status = 'LANDED'
