@@ -17,14 +17,12 @@
 <form method="post">
 
   {% if error %}
-    <p style="color: #ffb3b3; font-weight: 600; margin-bottom: 12px;">
-      {{ error }}
-    </p>
+    <div class="form-error">{{ error }}</div>
   {% endif %}
 
-  <p style="opacity: 0.85; margin-bottom: 18px;">
+  <div class="form-note">
     Number of seats will be calculated automatically based on the rows and columns you define below.
-  </p>
+  </div>
 
   {% if size == 'LARGE' %}
     <h2>Business Class</h2>
@@ -57,3 +55,4 @@
 
 </body>
 </html>
+
