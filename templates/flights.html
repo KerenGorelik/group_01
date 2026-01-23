@@ -36,13 +36,14 @@
 
 <form method="GET" action="{{ url_for('admin_flights') }}">
     <label for="status">Filter by Status:</label>
-<select name="status" id="status">
-  {% for val, label in status_options %}
-    <option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>
-      {{ label }}
-    </option>
-  {% endfor %}
-</select>
+
+    <select name="status" id="status">
+      {% for val, label in status_options %}
+        <option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>
+          {{ label }}
+        </option>
+      {% endfor %}
+    </select>
 
     <button type="submit">Filter</button>
 </form>
@@ -69,7 +70,10 @@
             <td>{{ flight.Destination_airport }}</td>
             <td>{{ flight.pilot_count }}</td>
             <td>{{ flight.steward_count }}</td>
-            <td>{{ flight.Flight_status }}</td>
+
+            <!-- ✅ this line fixes empty/NULL statuses -->
+            <td>{{ flight.Flight_status or 'ACTIVE' }}</td>
+
             <td>
                 {% if flight.ready %}
                     <span class="ready">READY</span>
@@ -86,8 +90,9 @@
         {% endfor %}
     </tbody>
 </table>
+
 <form method="GET" action="{{ url_for('admin_dashboard') }}">
-  <button type="submit">Back to Admin</button>  
+  <button type="submit">Back to Admin</button>
 </form>
 </body>
 </html>
