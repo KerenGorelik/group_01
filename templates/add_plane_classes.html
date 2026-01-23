@@ -3,41 +3,57 @@
 <head>
     <title>FLYTAU ADMIN- Add Classes</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
 </head>
+
 <body>
 <div class="corner-logo">
   <a href="{{ url_for('landing_page') }}">
     <img src="{{ url_for('static', filename='flytau_logo_circle.png') }}" alt="FLYTAU">
   </a>
 </div>
-    <h1>Add Class seating</h1>
+
+<h1>Add Class seating</h1>
+
 <form method="post">
-    {% if error %}
-  <p style="color: #ffb3b3; font-weight: 600;">{{ error }}</p>
-{% endif %}
-    {% if size == 'LARGE' %}
-    <h2>Business Class</h2>
-    <input name="bus_first_row" placeholder="First row" required>
-    <input name="bus_last_row" placeholder="Last row" required>
-    <input name="bus_first_col" placeholder="First column" required>
-    <input name="bus_last_col" placeholder="Last column" required>
+
+  {% if error %}
+    <p style="color: #ffb3b3; font-weight: 600; margin-bottom: 12px;">
+      {{ error }}
+    </p>
   {% endif %}
+
+  <p style="opacity: 0.85; margin-bottom: 18px;">
+    Number of seats will be calculated automatically based on the rows and columns you define below.
+  </p>
+
+  {% if size == 'LARGE' %}
+    <h2>Business Class</h2>
+
+    <input type="number" name="bus_first_row" placeholder="First row" min="1" required>
+    <input type="number" name="bus_last_row" placeholder="Last row" min="1" required>
+
+    <input type="text" name="bus_first_col" placeholder="First column (A-Z)"
+           maxlength="1" pattern="[A-Za-z]" required>
+    <input type="text" name="bus_last_col" placeholder="Last column (A-Z)"
+           maxlength="1" pattern="[A-Za-z]" required>
+  {% endif %}
+
   <h2>Economy Class</h2>
-  <input name="eco_first_row" placeholder="First row" required>
-  <input name="eco_last_row" placeholder="Last row" required>
-  <input name="eco_first_col" placeholder="First column" required>
-  <input name="eco_last_col" placeholder="Last column" required>
+
+  <input type="number" name="eco_first_row" placeholder="First row" min="1" required>
+  <input type="number" name="eco_last_row" placeholder="Last row" min="1" required>
+
+  <input type="text" name="eco_first_col" placeholder="First column (A-Z)"
+         maxlength="1" pattern="[A-Za-z]" required>
+  <input type="text" name="eco_last_col" placeholder="Last column (A-Z)"
+         maxlength="1" pattern="[A-Za-z]" required>
 
   <button type="submit">Save Classes</button>
-
 </form>
-{% if error %}
-  <div class="error-box">
-    {{ error }}
-  </div>
-{% endif %}
+
+<form method="GET" action="{{ url_for('admin_dashboard') }}">
+  <button type="submit">Back to Admin</button>
+</form>
+
 </body>
-
-
 </html>
