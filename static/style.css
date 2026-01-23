@@ -1400,6 +1400,30 @@ h1{ text-align: center; }
   box-sizing: border-box;
   text-align: center; /* אם את רוצה שהטקסט בתוך המלבן יהיה באמצע */
 }
+/* כותרת באמצע */
+.landing h1{
+  text-align: center;
+}
+
+/* הבאנר העליון יהיה באותו רוחב כמו הכרטיס */
+.landing .top-banner{
+  max-width: 720px;              /* תואם לרוחב של החיפוש */
+  width: calc(100% - 32px);
+  margin: 12px auto 18px;
+}
+
+/* מבטל “מרכוז” אבסולוטי שגורם לחפיפה */
+.landing .search-form{
+  max-width: 720px;
+  width: calc(100% - 32px);
+  margin: 0 auto 40px;
+
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+}
+
 
 
 
