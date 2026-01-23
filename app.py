@@ -924,10 +924,10 @@ def delete_steward(steward_id):
 
 @handle_errors
 @application.route('/admin/flights', methods=['GET'])
-def admin_flights(): # View and manage flights
+def admin_flights():  # View and manage flights
     if get_user_role(session) != 'manager':
         abort(403, description="Forbidden")
-    
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -975,22 +975,21 @@ def admin_flights(): # View and manage flights
             flight['steward_count'] == required_stewards
         )
 
-status_options = [
-    ("", "All"),
-    ("ACTIVE", "Active"),
-    ("DELAYED", "Delayed"),
-    ("LANDED", "Landed"),
-    ("CANCELLED", "Cancelled"),
-    ("FULLY BOOKED", "Fully Booked"),
-]
+    status_options = [
+        ("", "All"),
+        ("ACTIVE", "Active"),
+        ("DELAYED", "Delayed"),
+        ("LANDED", "Landed"),
+        ("CANCELLED", "Cancelled"),
+        ("FULLY BOOKED", "Fully Booked"),
+    ]
 
-return render_template(
-    'flights.html',
-    flights=flights,
-    selected_status=status_filter or "",
-    status_options=status_options
-)
-
+    return render_template(
+        'flights.html',
+        flights=flights,
+        selected_status=status_filter or "",
+        status_options=status_options
+    )
 
 @handle_errors
 @application.route('/admin/flights/<int:flight_number>/edit', methods=['GET', 'POST'])
