@@ -112,12 +112,26 @@ def handle_flight_update(flight_number):
 
         # ---- Update business price if applicable ----
         if business_price is not None:
+            # making sure business price exists in sql
+            cursor.execute("SELECT Plane_id FROM Flight WHERE Flight_number= %s", (flight_number,))
+            row = cursor.fetchone()
+            plane_id = row['Plane_id']  # or row[0] if not dict cursor
+
+            cursor.execute("""
+                SELECT * FROM Flight_pricing WHERE Flight_number = %s AND Class_type = 'BUSINESS'
+                           """, (flight_number,))
+            check = cursor.fetchall()
+            if not check:
+                cursor.execute("""
+                    INSERT INTO Flight_pricing (Flight_number, Plane_id, Class_type, Employee_id, Price) VALUES (%s,%s,'BUSINESS',1,0)
+                """, (flight_number,plane_id))
             cursor.execute("""
                 UPDATE Flight_pricing
                 SET Price = %s
                 WHERE Flight_number = %s
                   AND Class_type = 'BUSINESS'
             """, (business_price, flight_number))
+            
 
         conn.commit()
 
