@@ -16,19 +16,10 @@
 
   <form method="post" id="classForm">
 
-    <!-- ONE message box only (server + client). Hidden by default -->
-    <div id="msgBox" class="form-error" hidden></div>
-
     {% if error %}
-      <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          const box = document.getElementById('msgBox');
-          if (!box) return;
-          box.textContent = {{ error|tojson }};
-          box.hidden = false;
-          box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        });
-      </script>
+      <div class="error-box">
+            {{ error }}
+        </div>
     {% endif %}
 
     <div class="form-note">
@@ -64,57 +55,6 @@
     <button type="submit">Back to Admin</button>
   </form>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const form = document.getElementById('classForm');
-      const msgBox = document.getElementById('msgBox');
-      if (!form || !msgBox) return;
-
-      function showError(msg) {
-        msgBox.textContent = msg;
-        msgBox.hidden = false;
-        msgBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-
-      function hideError() {
-        msgBox.textContent = '';
-        msgBox.hidden = true;
-      }
-
-      // Hide message as soon as the user edits
-      form.querySelectorAll('input').forEach(inp => inp.addEventListener('input', hideError));
-
-      form.addEventListener('submit', (e) => {
-        hideError();
-
-        const busLastEl  = form.querySelector('input[name="bus_last_row"]'); // exists only for LARGE
-        const ecoFirstEl = form.querySelector('input[name="eco_first_row"]');
-        const ecoLastEl  = form.querySelector('input[name="eco_last_row"]');
-
-        const ecoFirst = parseInt(ecoFirstEl.value, 10);
-        const ecoLast  = parseInt(ecoLastEl.value, 10);
-
-        // Rule 1: Economy last row must be >= first row
-        if (!Number.isNaN(ecoFirst) && !Number.isNaN(ecoLast) && ecoLast < ecoFirst) {
-          e.preventDefault();
-          showError("Not logical: Economy last row must be >= first row.");
-          ecoLastEl.focus();
-          return;
-        }
-
-        // Rule 2: Economy must start immediately after Business ends
-        if (busLastEl) {
-          const busLast = parseInt(busLastEl.value, 10);
-          if (!Number.isNaN(busLast) && !Number.isNaN(ecoFirst) && ecoFirst !== busLast + 1) {
-            e.preventDefault();
-            showError(`Not logical: Economy must start at row ${busLast + 1} because Business ends at row ${busLast}.`);
-            ecoFirstEl.focus();
-            return;
-          }
-        }
-      });
-    });
-  </script>
 </body>
 </html>
 
