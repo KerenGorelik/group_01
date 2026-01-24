@@ -30,6 +30,14 @@ def generate_seats_for_plane(plane_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+    # Check if seats already exist for this plane
+    cursor.execute("SELECT 1 FROM Seat WHERE Plane_id = %s LIMIT 1", (plane_id,))
+    if cursor.fetchone():
+        # Seats already exist, skip
+        cursor.close()
+        conn.close()
+        return
+    
     cursor.execute("""
         SELECT Class_type, first_row, last_row, first_col, last_col
         FROM Class
