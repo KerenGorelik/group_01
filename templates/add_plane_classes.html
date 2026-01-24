@@ -14,7 +14,7 @@
 
 <h1>Add Class seating</h1>
 
-<form method="post">
+<form method="post" id="classForm">
 
   {% if error %}
     <div class="form-error">{{ error }}</div>
@@ -27,23 +27,23 @@
   {% if size == 'LARGE' %}
     <h2>Business Class</h2>
 
-    <input type="number" name="bus_first_row" placeholder="First row" min="1" required>
-    <input type="number" name="bus_last_row" placeholder="Last row" min="1" required>
+    <input type="number" id="bus_first_row" name="bus_first_row" placeholder="First row" min="1" required>
+    <input type="number" id="bus_last_row"  name="bus_last_row"  placeholder="Last row"  min="1" required>
 
-    <input type="text" name="bus_first_col" placeholder="First column (A-Z)"
+    <input type="text" id="bus_first_col" name="bus_first_col" placeholder="First column (A-Z)"
            maxlength="1" pattern="[A-Za-z]" required>
-    <input type="text" name="bus_last_col" placeholder="Last column (A-Z)"
+    <input type="text" id="bus_last_col"  name="bus_last_col"  placeholder="Last column (A-Z)"
            maxlength="1" pattern="[A-Za-z]" required>
   {% endif %}
 
   <h2>Economy Class</h2>
 
-  <input type="number" name="eco_first_row" placeholder="First row" min="1" required>
-  <input type="number" name="eco_last_row" placeholder="Last row" min="1" required>
+  <input type="number" id="eco_first_row" name="eco_first_row" placeholder="First row" min="1" required>
+  <input type="number" id="eco_last_row"  name="eco_last_row"  placeholder="Last row"  min="1" required>
 
-  <input type="text" name="eco_first_col" placeholder="First column (A-Z)"
+  <input type="text" id="eco_first_col" name="eco_first_col" placeholder="First column (A-Z)"
          maxlength="1" pattern="[A-Za-z]" required>
-  <input type="text" name="eco_last_col" placeholder="Last column (A-Z)"
+  <input type="text" id="eco_last_col"  name="eco_last_col"  placeholder="Last column (A-Z)"
          maxlength="1" pattern="[A-Za-z]" required>
 
   <button type="submit">Save Classes</button>
@@ -53,6 +53,24 @@
   <button type="submit">Back to Admin</button>
 </form>
 
+<script>
+  // Rule: no "gap" between classes.
+  // If Business exists (size == LARGE), then Economy first row must be Business last row + 1.
+  document.getElementById('classForm').addEventListener('submit', function (e) {
+    const busLastEl = document.getElementById('bus_last_row'); // exists only when LARGE
+    if (!busLastEl) return; // no business class -> nothing to validate here
+
+    const busLast = parseInt(busLastEl.value, 10);
+    const ecoFirst = parseInt(document.getElementById('eco_first_row').value, 10);
+
+    if (Number.isNaN(busLast) || Number.isNaN(ecoFirst)) return;
+
+    if (ecoFirst !== busLast + 1) {
+      e.preventDefault(); // stop POST -> prevents creating/updating classes
+      alert(`Not logical: Economy must start at row ${busLast + 1} because Business ends at row ${busLast}.`);
+    }
+  });
+</script>
+
 </body>
 </html>
-
