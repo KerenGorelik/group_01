@@ -801,7 +801,6 @@ def add_plane():
         manufacturer = request.form['manufacturer']
         size = request.form['size']
 
-        # שומרים זמנית עד שלב המחלקות
         session['pending_plane'] = {
             'manufacturer': manufacturer,
             'size': size
