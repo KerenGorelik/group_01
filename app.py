@@ -656,15 +656,15 @@ GROUP BY s.Employee_id;
     
     staff_flight_hours = cursor.fetchall()
     # Monthly cancellation report
-cursor.execute("""
-    SELECT
-      DATE_FORMAT(b.Booking_date, '%Y-%m') AS ym,
-      ROUND(SUM(b.Booking_status = 'CUSTOMER_CANCELLED') * 100.0 / COUNT(*), 2) AS cancellation_rate_pct
-    FROM Booking b
-    GROUP BY ym
-    ORDER BY ym;
-""")
-cancellation_report = cursor.fetchall()
+    cursor.execute("""
+        SELECT
+        DATE_FORMAT(b.Booking_date, '%Y-%m') AS ym,
+        ROUND(SUM(b.Booking_status = 'CUSTOMER_CANCELLED') * 100.0 / COUNT(*), 2) AS cancellation_rate_pct
+        FROM Booking b
+        GROUP BY ym
+        ORDER BY ym;
+    """)
+    cancellation_report = cursor.fetchall()
 
     cursor.close()
     conn.close()
@@ -674,12 +674,11 @@ cancellation_report = cursor.fetchall()
         'reports.html',
         avg_taken_seats=avg_taken_seats,
         money_intake=money_intake,
-        staff_flight_hours=staff_flight_hours
+        staff_flight_hours=staff_flight_hours,
         cancellation_report=cancellation_report
-
     )
 
-# Admin add planes
+    # Admin add planes
 
 @handle_errors
 @application.route('/admin/add_plane', methods=['GET', 'POST'])
