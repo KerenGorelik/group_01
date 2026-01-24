@@ -1509,7 +1509,7 @@ def passenger_count(flight_number):
             email = session.get('client_email')
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT r.Passport_number, r.Birth_date, c.English_first_name, c.English_last_name FROM Registered_client AS r JOIN Client AS c ON r.Email = c.Email WHERE r.Email = %s", (email,))
+            cursor.execute("SELECT r.Passport_number, r.Birth_date, c.English_first_name, c.English_last_name, p.Phone_number FROM Registered_client AS r JOIN Client AS c ON r.Email = c.Email JOIN Phone_numbers AS r.Email = p.Email WHERE r.Email = %s", (email,))
             user = cursor.fetchone()
             user['type'] = 'ADULT' if (datetime.now().date() - user['Birth_date']).days // 365 < 18 else 'CHILD'
             cursor.close()
@@ -1532,7 +1532,7 @@ def passenger_details(flight_number):
             email = session.get('client_email')
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT r.Email, r.Passport_number, r.Birth_date, c.English_first_name, c.English_last_name FROM Registered_client AS r JOIN Client AS c ON r.Email = c.Email WHERE r.Email = %s", (email,))
+            cursor.execute("SELECT r.Passport_number, r.Birth_date, c.English_first_name, c.English_last_name, p.Phone_number FROM Registered_client AS r JOIN Client AS c ON r.Email = c.Email JOIN Phone_numbers AS r.Email = p.Email WHERE r.Email = %s", (email,))
             user = cursor.fetchone()
             user['type'] = 'ADULT' if (datetime.now().date() - user['Birth_date']).days // 365 >= 18 else 'CHILD'
             cursor.close()
@@ -1553,6 +1553,7 @@ def passenger_details(flight_number):
                 "type": request.form[f"type_{i}"],
                 "Email": request.form.get(f"email", None),
                 "birthdate": request.form.get(f"birthdate", None)
+                "phone_number": request.form.get(f"phone_number", None)
             })
 
         session['passengers'] = passengers
@@ -1587,7 +1588,7 @@ from collections import defaultdict
 def seat_selection(flight_number):
     count = int(request.args.get('count'))
 
-    # פונקציה קטנה כדי לטעון מושבים ולהחזיר אותם בפורמט שלך
+    # helper function to load seats and return them with consistent format
     def load_seat_rows():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -1611,8 +1612,7 @@ def seat_selection(flight_number):
         selected_seats = []
         for i in range(1, count + 1):
             s = request.form.get(f"seat_{i}")
-            if not s:
-                # חסר מושב -> לא ממשיכים
+            if not s: # dont continue if there are no seats
                 seats = load_seat_rows()
                 return render_template(
                     'seat_selection.html',
@@ -1624,7 +1624,7 @@ def seat_selection(flight_number):
                 )
             selected_seats.append(s)
 
-        # ✅ מניעת בחירת אותו מושב פעמיים
+        # prevent user from picking the same seat twice
         if len(set(selected_seats)) != len(selected_seats):
             seats = load_seat_rows()
             return render_template(
@@ -1738,13 +1738,13 @@ def confirm_booking(flight_number):
 
     conn = get_db_connection()
     cursor = conn.cursor()
-        
+    
     # Create booking
     if get_user_role(session) == 'client':
         email = session.get('client_email')
     else:
         email = passengers[0]['Email']  # Use first passenger's email for guest bookings
-
+        phone_number = passengers[0]['phone_number']
         # Enter into Client table if not exists
         cursor.execute("SELECT 1 FROM Client WHERE Email = %s", (email,))
         if not cursor.fetchone():
@@ -1753,6 +1753,10 @@ def confirm_booking(flight_number):
             cursor.execute(
                 "INSERT INTO Client (Email, English_first_name, English_last_name) VALUES (%s, %s, %s)",
                 (email, first_name, last_name)
+            )
+            cursor.exectue(
+                "INSERT INTO Phone_numbers (Email, Phone_number) VALUES (%s, %s)",
+                (email,phone_number)
             )
     # generate booking number
     cursor.execute("SELECT MAX(Booking_number) FROM Booking")
