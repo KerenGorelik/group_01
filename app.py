@@ -1511,7 +1511,7 @@ def passenger_count(flight_number):
             email = session.get('client_email')
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT r.Passport_number, r.Birth_date, c.English_first_name, c.English_last_name, p.Phone_number FROM Registered_client AS r JOIN Client AS c ON r.Email = c.Email JOIN Phone_numbers AS r.Email = p.Email WHERE r.Email = %s", (email,))
+            cursor.execute("SELECT r.Passport_number, r.Birth_date, c.English_first_name, c.English_last_name, p.Phone_number FROM Registered_client r JOIN Client c ON r.Email = c.Email JOIN Phone_numbers p ON r.Email = p.Email WHERE r.Email = %s", (email,))
             user = cursor.fetchone()
             user['type'] = 'ADULT' if (datetime.now().date() - user['Birth_date']).days // 365 < 18 else 'CHILD'
             cursor.close()
@@ -1602,7 +1602,7 @@ def seat_selection(flight_number):
                 AND sif.Row_num = s.Row_num 
                 AND sif.Col_num = s.Col_num
             WHERE sif.Flight_number = %s 
-                AND s.Class_type = %s     
+                AND s.Class_type = %s
             ORDER BY Row_num, Col_num
         """, (flight_number,class_type))
         seats = cursor.fetchall()
@@ -1845,11 +1845,11 @@ def manage_booking():
 
     # guest
     booking_number = request.form.get('booking_number')
-    passport_number = request.form.get('passport_number')
+    Email = request.form.get('Email')
     return redirect(url_for('manage_booking_result',
                             method='guest',
                             booking_number=booking_number,
-                            passport_number=passport_number))
+                            Email=Email))
 
 @handle_errors
 @application.route('/manage-booking/result')
@@ -1870,14 +1870,14 @@ def manage_booking_result():
         bookings = cursor.fetchall()
     else:
         booking_number = request.args.get('booking_number')
-        passport_number = request.args.get('passport_number')
+        email = request.args.get('Email')
 
         cursor.execute("""
             SELECT *
             FROM Booking
             WHERE Booking_number = %s
-              AND Passport_number = %s
-        """, (booking_number, passport_number))
+              AND Email = %s
+        """, (booking_number, email))
         bookings = cursor.fetchall()
 
     if not bookings:
