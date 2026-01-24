@@ -81,7 +81,6 @@ def get_available_planes(flight_number):
     cursor.execute(query, (flight_number,))
     flight = cursor.fetchone()
     # defining departure and arrival datetimes
-
     dep_time_td = flight['Departure_time']   # timedelta
     dep_time = (datetime.min + dep_time_td).time()
     dep_dt = datetime.combine(
@@ -90,6 +89,8 @@ def get_available_planes(flight_number):
     )
 
     arr_dt = dep_dt + timedelta(minutes=flight['Duration'])
+    # Check if long-haul
+    long_haul = flight['Duration'] > 360
 
     query = """
         SELECT p.Plane_id, p.Manufacturer, p.Size
@@ -104,6 +105,9 @@ def get_available_planes(flight_number):
                 + INTERVAL fr2.Duration MINUTE > %s
         )
     """
+    params = [arr_dt, dep_dt]
+    if long_haul:
+        query += "AND p.Size = 'LARGE'"
     cursor.execute(query, (arr_dt, dep_dt))
     results = cursor.fetchall()
 
@@ -208,18 +212,17 @@ def get_available_stewards(flight_number, long_haul_required):
     )
 
 def is_long_haul_flight(flight_number):
-    # Get plane size from DB
+    # Check duration from Flying_route
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT p.Size 
-        FROM Plane p
-        JOIN Flight f ON p.Plane_id = f.Plane_id
+        SELECT fr.Duration
+        FROM Flight f
+        JOIN Flying_route fr ON f.Route_id = fr.Route_id
         WHERE f.Flight_number = %s
     """, (flight_number,))
-    plane = cursor.fetchone()
-    plane_size = plane['Size'] if plane else None
-    long_haul_required = plane_size == 'LARGE'
+    route = cursor.fetchone()
+    long_haul_required = route and route['Duration'] > 360
     cursor.close()
     conn.close()
     return long_haul_required
