@@ -1294,6 +1294,8 @@ def admin_flights():
             f.Flight_number,
             fr.Origin_airport,
             fr.Destination_airport,
+            f.Departure_time,
+            f.Departure_date,
             COUNT(DISTINCT pf.Employee_id) AS pilot_count,
             COUNT(DISTINCT sf.Employee_id) AS steward_count,
             p.Size,
