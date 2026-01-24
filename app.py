@@ -436,7 +436,7 @@ def admin_graph():
     plt.title("Total Flight Time per Employee (Short vs Long)")
     plt.xlabel("Employee_id")
     plt.ylabel("Duration")
-    plt.xticks(idx, labels, rotation=0)
+    plt.xticks(idx, labels, rotation=45)
     plt.legend()
     plt.tight_layout()
 
