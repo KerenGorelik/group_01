@@ -548,19 +548,18 @@ def admin_reports():
 
     # Example report: Flight counts by status
     cursor.execute("""
-        SELECT AVG(t.occupancy_pct) AS avg_occupancy_pct
-        FROM (
-            SELECT
-                f.Flight_number,
-                100.0 * SUM(CASE WHEN s.Availability = 0 THEN 1 ELSE 0 END)
-                    / NULLIF(COUNT(s.Plane_id), 0) AS occupancy_pct
-            FROM Flight f
-            LEFT JOIN Seats_in_flight s
-            ON f.Flight_number = s.Flight_number
-            AND f.Plane_id     = s.Plane_id
-            WHERE f.Flight_status = 'LANDED'
-            GROUP BY f.Flight_number
-        ) AS t;
+        SELECT AVG(occ_pct) AS avg_occupancy_pct
+FROM (
+    SELECT
+        f.Flight_number,
+        100.0 * SUM(s.Availability = 0) / COUNT(*) AS occ_pct
+    FROM Flight f
+    JOIN Seats_in_flight s
+      ON s.Flight_number = f.Flight_number
+     AND s.Plane_id      = f.Plane_id
+    WHERE f.Flight_status = 'LANDED'
+    GROUP BY f.Flight_number
+) t;
     """)
     results = cursor.fetchall()
     avg_taken_seats = float(results[0]['avg_occupancy_pct']) if results else 0
@@ -591,6 +590,7 @@ LEFT JOIN (
   ON fp.Flight_number = f.Flight_number
  AND fp.Plane_id     = f.Plane_id
  AND fp.Class_type   = c.Class_type
+
 
 LEFT JOIN Booking b
   ON b.Flight_number = f.Flight_number
@@ -651,9 +651,21 @@ LEFT JOIN Flight f
 LEFT JOIN Flying_route fr
     ON fr.Route_id = f.Route_id
 GROUP BY s.Employee_id;
+
 """)
     
     staff_flight_hours = cursor.fetchall()
+    # Monthly cancellation report
+cursor.execute("""
+    SELECT
+      DATE_FORMAT(b.Booking_date, '%Y-%m') AS ym,
+      ROUND(SUM(b.Booking_status = 'CUSTOMER_CANCELLED') * 100.0 / COUNT(*), 2) AS cancellation_rate_pct
+    FROM Booking b
+    GROUP BY ym
+    ORDER BY ym;
+""")
+cancellation_report = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
@@ -663,6 +675,8 @@ GROUP BY s.Employee_id;
         avg_taken_seats=avg_taken_seats,
         money_intake=money_intake,
         staff_flight_hours=staff_flight_hours
+        cancellation_report=cancellation_report
+
     )
 
 # Admin add planes
