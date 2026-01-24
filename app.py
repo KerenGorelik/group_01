@@ -1855,18 +1855,24 @@ def manage_booking():
 @application.route('/manage-booking/result')
 def manage_booking_result():
     method = request.args.get('method')
+    status_filter = request.args.get('status')  # New: Get status filter from query params
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
     if method == 'registered':
         email = request.args.get('email')
-        cursor.execute("""
+        query = """
             SELECT *
             FROM Booking
             WHERE Email = %s
-            ORDER BY Booking_date DESC
-        """, (email,))
+        """
+        params = [email]
+        if status_filter:  # Add status filter if provided
+            query += " AND Booking_status = %s"
+            params.append(status_filter)
+        query += " ORDER BY Booking_date DESC"
+        cursor.execute(query, params)
         bookings = cursor.fetchall()
     else:
         booking_number = request.args.get('booking_number')
@@ -1958,7 +1964,8 @@ def manage_booking_result():
     return render_template(
         'manage_booking_result.html',
         bookings=bookings,
-        role=get_user_role(session)
+        role=get_user_role(session),
+        status_filter=status_filter  # Pass to template for UI
     )
 
 
