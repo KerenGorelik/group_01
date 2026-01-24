@@ -1552,7 +1552,7 @@ def passenger_details(flight_number):
                 "id": request.form[f"id_{i}"],
                 "type": request.form[f"type_{i}"],
                 "Email": request.form.get(f"email", None),
-                "birthdate": request.form.get(f"birthdate", None)
+                "birthdate": request.form.get(f"birthdate", None),
                 "phone_number": request.form.get(f"phone_number", None)
             })
 
