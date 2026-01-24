@@ -849,50 +849,54 @@ def add_classes():
 
     if request.method == 'POST':
         # ---- parse ----
-        if size == 'LARGE':
-            bus_first_row = int(request.form['bus_first_row'])
-            bus_last_row  = int(request.form['bus_last_row'])
-            bus_first_col = request.form['bus_first_col']
-            bus_last_col  = request.form['bus_last_col']
+        try:
+            eco_first_row = int(request.form['eco_first_row'])
+            eco_last_row  = int(request.form['eco_last_row'])
+            eco_first_col = request.form['eco_first_col']
+            eco_last_col  = request.form['eco_last_col']
 
-        eco_first_row = int(request.form['eco_first_row'])
-        eco_last_row  = int(request.form['eco_last_row'])
-        eco_first_col = request.form['eco_first_col']
-        eco_last_col  = request.form['eco_last_col']
+            bus_first_row = bus_last_row = None
+            bus_first_col = bus_last_col = None
+
+            if size == 'LARGE':
+                bus_first_row = int(request.form['bus_first_row'])
+                bus_last_row  = int(request.form['bus_last_row'])
+                bus_first_col = request.form['bus_first_col']
+                bus_last_col  = request.form['bus_last_col']
+        except (KeyError, ValueError):
+            return render_template('add_plane_classes.html', size=size, error="Invalid input. Please fill all fields correctly.")
+
+        # ---- validate business + NO-GAP RULE (only for LARGE) ----
+        bus_cnt = 0
+        if size == 'LARGE':
+            bus_cnt, err = seats_count(bus_first_row, bus_last_row, bus_first_col, bus_last_col, "Business Class")
+            if err:
+                return render_template('add_plane_classes.html', size=size, error=err)
+
+            expected_eco_first = bus_last_row + 1
+            if eco_first_row != expected_eco_first:
+                return render_template(
+                    'add_plane_classes.html',
+                    size=size,
+                    error=f"Not logical: Economy must start at row {expected_eco_first} because Business ends at row {bus_last_row}."
+                )
 
         # ---- validate economy ----
         eco_cnt, err = seats_count(eco_first_row, eco_last_row, eco_first_col, eco_last_col, "Economy Class")
         if err:
             return render_template('add_plane_classes.html', size=size, error=err)
 
-        # ---- validate business + overlap ----
-# ---- validate business + "no gap" rule ----
-bus_cnt = 0
-if size == 'LARGE':
-    bus_cnt, err = seats_count(bus_first_row, bus_last_row, bus_first_col, bus_last_col, "Business Class")
-    if err:
-        return render_template('add_plane_classes.html', size=size, error=err)
-
-    # Rule: Economy must start immediately after Business ends (no gaps, no overlaps)
-    expected_eco_first = bus_last_row + 1
-    if eco_first_row != expected_eco_first:
-        return render_template(
-            'add_plane_classes.html',
-            size=size,
-            error=f"Not logical: Economy must start at row {expected_eco_first} because Business ends at row {bus_last_row}."
-        )
-
-    # (Optional extra safety) Ensure economy doesn't end before it starts
-    if eco_last_row < eco_first_row:
-        return render_template(
-            'add_plane_classes.html',
-            size=size,
-            error="Economy Class: last row must be >= first row."
-        )
-
-
+        # ---- totals ----
         total_seats = eco_cnt + bus_cnt
         class_num = 2 if size == 'LARGE' else 1
+
+        # normalize cols for insert
+        eco_first_col_u = eco_first_col.strip().upper()
+        eco_last_col_u  = eco_last_col.strip().upper()
+
+        if size == 'LARGE':
+            bus_first_col_u = bus_first_col.strip().upper()
+            bus_last_col_u  = bus_last_col.strip().upper()
 
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -905,23 +909,24 @@ if size == 'LARGE':
             max_plane = cursor.fetchone()
             plane_id = (max_plane['max_num'] or 0) + 1
 
-            # INSERT Plane (כאן ורק כאן)
+            # INSERT Plane
             cursor.execute("""
                 INSERT INTO Plane (Plane_id, Manufacturer, Size, Purchase_date, Number_of_classes, Number_of_seats)
                 VALUES (%s, %s, %s, %s, %s, %s)
             """, (plane_id, pending['manufacturer'], size, datetime.now().date(), class_num, total_seats))
 
-            # INSERT Classes
+            # INSERT Economy
             cursor.execute("""
                 INSERT INTO Class (Plane_id, Class_type, first_row, last_row, first_col, last_col)
                 VALUES (%s, 'ECONOMY', %s, %s, %s, %s)
-            """, (plane_id, eco_first_row, eco_last_row, eco_first_col.strip().upper(), eco_last_col.strip().upper()))
+            """, (plane_id, eco_first_row, eco_last_row, eco_first_col_u, eco_last_col_u))
 
+            # INSERT Business (if LARGE)
             if size == 'LARGE':
                 cursor.execute("""
                     INSERT INTO Class (Plane_id, Class_type, first_row, last_row, first_col, last_col)
                     VALUES (%s, 'BUSINESS', %s, %s, %s, %s)
-                """, (plane_id, bus_first_row, bus_last_row, bus_first_col.strip().upper(), bus_last_col.strip().upper()))
+                """, (plane_id, bus_first_row, bus_last_row, bus_first_col_u, bus_last_col_u))
 
             conn.commit()
 
