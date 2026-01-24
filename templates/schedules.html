@@ -11,19 +11,51 @@
         .schedule-item {
             margin-left: 20px;
         }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        th, td {
-            padding: 8px;
-            border: 1px solid #ccc;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
+        .schedule-table{
+    width: 100%;
+    margin: 12px 0 24px;
+
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border-radius: 18px;
+
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(6px);
+}
+
+.schedule-table th,
+.schedule-table td{
+    padding: 14px 18px;
+    text-align: center;
+    border: none;
+}
+
+.schedule-table thead th{
+    background: rgba(255,255,255,0.10); /* במקום לבן */
+    color: rgba(255,255,255,0.95);
+    font-weight: 700;
+}
+
+.schedule-table tbody td{
+    color: rgba(255,255,255,0.90);
+    border-top: 1px solid rgba(255,255,255,0.12);
+}
+
+.schedule-table tbody tr:nth-child(even){
+    background: rgba(255,255,255,0.03);
+}
+.schedule-table tbody tr:hover{
+    background: rgba(255,255,255,0.06);
+}
+
+.table-help{
+    margin: 6px 0 10px;
+    color: rgba(255,255,255,0.80);
+    font-size: 0.95rem;
+}
+
     </style>
 </head>
 <body>
