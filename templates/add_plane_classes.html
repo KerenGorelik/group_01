@@ -35,8 +35,9 @@
 
       <input type="text" name="bus_first_col" placeholder="First column (A-Z)"
              maxlength="1" pattern="[A-Za-z]" required>
-      <input type="text" name="bus_last_col"  placeholder="Last column (A-Z)"
-             maxlength="1" pattern="[A-Za-z]" required>
+      <input type="text" name="eco_last_col"  placeholder="Last column (A-Z)"
+       maxlength="1" pattern="[A-Za-z]" required>
+
     {% endif %}
 
     <h2>Economy Class</h2>
@@ -50,6 +51,7 @@
            maxlength="1" pattern="[A-Za-z]" required>
 
   <button type="submit">Save Classes</button>
+    </div> 
 </form>
 
 <form method="GET" action="{{ url_for('admin_dashboard') }}">
