@@ -108,6 +108,8 @@ SELECT
   SUM(b.Booking_status = 'CUSTOMER_CANCELLED') / 
   COUNT(*) AS cancellation_rate
 FROM Booking b
+JOIN Flight f ON f.Flight_number = b.Flight_number
+WHERE f.Flight_status = 'LANDED'
 GROUP BY ym
 ORDER BY ym;
 
