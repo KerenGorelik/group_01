@@ -21,7 +21,7 @@
             {{ error }}
         </div>
     {% endif %}
-    
+
     <div class="form-note">
       Number of seats will be calculated automatically based on the rows and columns you define below.
     </div>
@@ -47,17 +47,6 @@
            maxlength="1" pattern="[A-Za-z]" required>
     <input type="text" name="bus_last_col"  placeholder="Last column (A-Z)"
            maxlength="1" pattern="[A-Za-z]" required>
-  {% endif %}
-
-  <h2>Economy Class</h2>
-
-  <input type="number" name="eco_first_row" placeholder="First row" min="1" required>
-  <input type="number" name="eco_last_row"  placeholder="Last row"  min="1" required>
-
-  <input type="text" name="eco_first_col" placeholder="First column (A-Z)"
-         maxlength="1" pattern="[A-Za-z]" required>
-  <input type="text" name="eco_last_col"  placeholder="Last column (A-Z)"
-         maxlength="1" pattern="[A-Za-z]" required>
 
   <button type="submit">Save Classes</button>
 </form>
