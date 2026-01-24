@@ -1359,6 +1359,7 @@ def register():
         password = request.form['password']
         passport_number = request.form['passport_number']
         birth_date = request.form['birth_date']
+        phone_number = request.form['phone_number']
 
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -1387,6 +1388,11 @@ def register():
         cursor.execute(
             "INSERT INTO Registered_client (Email, Passport_number, Birth_date, Registered_password, Registration_date) VALUES (%s, %s, %s, %s, CURDATE())",
             (email, passport_number, birth_date, password)
+        )
+        # Insert phone number
+        cursor.execute(
+            "INSERT INTO Phone_numbers (Email, Phone_number) VALUES (%s, %s)",
+            (email, phone_number)
         )
         conn.commit()
         cursor.close()
