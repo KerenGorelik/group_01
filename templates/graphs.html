@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Graphs</title>
+</head>
+<body>
+    <h1>Admin Analytics Graphs</h1>
+    
+    <h2>Revenue by Plane Size & Manufacturer</h2>
+    <img src="{{ url_for('static', filename=plot1) }}" alt="Revenue Plot">
+    
+    <h2>Total Flight Time per Employee</h2>
+    <img src="{{ url_for('static', filename=plot2) }}" alt="Staff Hours Plot">
+    
+    <a href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a>
+</body>
+</html>
