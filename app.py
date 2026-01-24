@@ -115,7 +115,7 @@ def handle_flight_update(flight_number):
             # making sure business price exists in sql
             cursor.execute("SELECT Plane_id FROM Flight WHERE Flight_number= %s", (flight_number,))
             row = cursor.fetchone()
-            plane_id = row['Plane_id']  # or row[0] if not dict cursor
+            plane_id = row[0]
 
             cursor.execute("""
                 SELECT * FROM Flight_pricing WHERE Flight_number = %s AND Class_type = 'BUSINESS'
