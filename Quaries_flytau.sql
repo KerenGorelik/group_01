@@ -105,8 +105,8 @@ GROUP BY s.Employee_id;
 -- Quary 4 --
 SELECT
   DATE_FORMAT(b.Booking_date, '%Y-%m') AS ym,
-  SUM(b.Booking_status = 'CUSTOMER_CANCELLED') / 
-  COUNT(*) AS cancellation_rate
+  SUM(b.Booking_status = 'CUSTOMER CANCELLED') / 
+    COUNT(*) AS customer_cancellation_rate
 FROM Booking b
 GROUP BY ym
 ORDER BY ym;
