@@ -48,11 +48,18 @@
             </option>
         {% endfor %}
     </select>
-    <label>Economy Price</label>
-    <input type="number" required name="economy_price" value="{{ flight.economy_price }}">
-    {% if flight.Size == 'LARGE' %}
-        <label>Business Price</label>
-        <input type="number" required name="business_price" value="{{ flight.business_price }}">
+    {% if can_edit_economy %}
+        <label for="economy_price">Economy Price:</label>
+        <input type="number" id="economy_price" name="economy_price" step="0.01" value="{{ flight.economy_price or '' }}" required>
+    {% else %}
+        <p>Economy price cannot be changed.</p>
+    {% endif %}
+
+    {% if can_edit_business %}
+        <label for="business_price">Business Price:</label>
+        <input type="number" id="business_price" name="business_price" step="0.01" value="{{ flight.business_price or '' }}">
+    {% else %}
+        <p>Business price cannot be changed.</p>
     {% endif %}
     <label>Status</label>
     <select name="status" required>

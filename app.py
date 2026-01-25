@@ -36,15 +36,24 @@ Session(application)
 # --- Database connection ---
 
 def handle_flight_update(flight_number):
+    # Build context to access flags like can_edit_economy
+    ctx = build_edit_flight_context(flight_number)
+    can_edit_economy = ctx['context']['can_edit_economy']
+    can_edit_business = ctx['context']['can_edit_business']
     # ---- Parse form inputs ----
     route_id = request.form['route']
     status = request.form['status']
-    economy_price = float(request.form['economy_price'])
-    business_price = (
-        float(request.form['business_price'])
-        if 'business_price' in request.form and request.form['business_price']
-        else None
-    )
+    economy_price = None
+    if can_edit_economy and 'economy_price' in request.form:
+        economy_price = float(request.form['economy_price'])
+    business_price = None
+    if can_edit_business:
+        business_price = (
+            float(request.form['business_price'])
+            if 'business_price' in request.form and request.form['business_price']
+            else None
+        )
+
 
     departure_date = datetime.strptime(
         request.form['departure_date'], "%Y-%m-%d"
@@ -101,17 +110,17 @@ def handle_flight_update(flight_number):
             status,
             flight_number
         ))
-
-        # ---- Update economy price ----
-        cursor.execute("""
-            UPDATE Flight_pricing
-            SET Price = %s
-            WHERE Flight_number = %s
-              AND Class_type = 'ECONOMY'
-        """, (economy_price, flight_number))
+        if can_edit_economy:
+            # ---- Update economy price ----
+            cursor.execute("""
+                UPDATE Flight_pricing
+                SET Price = %s
+                WHERE Flight_number = %s
+                AND Class_type = 'ECONOMY'
+            """, (economy_price, flight_number))
 
         # ---- Update business price if applicable ----
-        if business_price is not None:
+        if business_price is not None and can_edit_business:
             # making sure business price exists in sql
             cursor.execute("SELECT Plane_id FROM Flight WHERE Flight_number= %s", (flight_number,))
             row = cursor.fetchone()

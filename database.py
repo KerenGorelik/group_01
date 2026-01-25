@@ -245,8 +245,13 @@ def build_edit_flight_context(flight_number, error=None):
         conn.close()
         return None
     
+    cursor.execute("SELECT 1 FROM Flight_pricing WHERE Flight_number = %s LIMIT 1", (flight_number,))
+
     flight['economy_price'] = None
     flight['business_price'] = None
+    context = {}
+    prices_exist = cursor.fetchone() is not None
+    context['can_edit_prices'] = not prices_exist  # Allow editing only if no prices set
 
     cursor.execute("SELECT Route_id, Origin_airport, Destination_airport FROM Flying_route")
     route = cursor.fetchall()
@@ -273,6 +278,8 @@ def build_edit_flight_context(flight_number, error=None):
             flight['economy_price'] = p['Price']
         elif p['Class_type'] == 'BUSINESS':
             flight['business_price'] = p['Price']    
+    context['can_edit_economy'] = flight['economy_price'] is None
+    context['can_edit_business'] = flight['business_price'] is None  # Allow editing business once
     cursor.close()
     conn.close()
 
@@ -284,5 +291,6 @@ def build_edit_flight_context(flight_number, error=None):
         'stewards': stewards,
         'assigned_pilots': assigned_pilots,
         'assigned_stewards': assigned_stewards,
-        'error': error
+        'error': error,
+        'context': context
     }
